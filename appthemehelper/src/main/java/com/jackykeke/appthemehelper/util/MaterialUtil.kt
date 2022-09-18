@@ -1,0 +1,78 @@
+package com.jackykeke.appthemehelper.util
+
+import android.content.res.ColorStateList
+import android.graphics.Color
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputLayout
+import com.jackykeke.appthemehelper.ThemeStore
+
+/**
+ *
+ * @author keyuliang on 2022/9/15.
+ * @version 9999.0.0
+ * @descrption 描述 ：
+ * @copy 版权当然属于 keyuliang
+ */
+object MaterialUtil {
+
+    @JvmOverloads
+    @JvmStatic
+    fun setTint(
+        button: MaterialButton,
+        background: Boolean = true,
+        color: Int = ThemeStore.accentColor(button.context)
+    ) {
+        button.isAllCaps =false
+        val context=button.context
+        val colorState =ColorStateList.valueOf(color)
+        val textColor = ColorStateList.valueOf(
+            MaterialValueHelper.getPrimaryTextColor(
+                context,
+                ColorUtil.isColorLight(color)
+            )
+        )
+
+        if (background){
+            button.backgroundTintList = colorState
+            button.setTextColor(textColor)
+            button.iconTint = textColor
+        }else {
+            button.setTextColor(colorState)
+
+        }
+
+    }
+
+
+    @JvmOverloads
+    @JvmStatic
+    fun tintColor(
+      button: MaterialButton,
+      textColor:Int = Color.WHITE,
+      backgroundColor:Int=Color.BLACK
+    ){
+        val backgroundColorStateList = ColorStateList.valueOf(backgroundColor)
+        val textColorColorStateList=ColorStateList.valueOf(textColor)
+        button.backgroundTintList =backgroundColorStateList
+        button.setTextColor(textColorColorStateList)
+        button.iconTint = textColorColorStateList
+    }
+
+
+    @JvmOverloads
+    @JvmStatic
+    fun setTint(textInputLayout: TextInputLayout, background: Boolean = true) {
+        val context = textInputLayout.context
+        val accentColor = ThemeStore.accentColor(context)
+        val colorState = ColorStateList.valueOf(accentColor)
+
+        if (background) {
+            textInputLayout.backgroundTintList = colorState
+            textInputLayout.defaultHintTextColor = colorState
+        } else {
+            textInputLayout.boxStrokeColor = accentColor
+            textInputLayout.defaultHintTextColor = colorState
+            textInputLayout.isHintAnimationEnabled = true
+        }
+    }
+}

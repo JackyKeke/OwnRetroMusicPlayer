@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.RetroMusic.Base.Adaptive" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="roundSelector">@drawable/round_selector</item>
+        <item name="rectSelector">@drawable/rect_selector</item>
+        <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+        <item name="materialAlertDialogTheme">@style/MaterialAlertDialogTheme</item>
+        <item name="materialButtonStyle">@style/MaterialButtonTheme</item>
+        <item name="popupMenuStyle">@style/MaterialPopupMenuStyle</item>
+        <item name="popupWindowStyle">@style/MaterialPopupMenuStyle</item>
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>T
+        <item name="elevationOverlayColor">@color/elevationOverlay</item>
+        <item name="popupMenuBackground">@drawable/popup_background</item>
+        <item name="android:windowActionModeOverlay">false</item>
+
+    </style>
+
+
+    <!-- content description is necessary to find the overflow button later in the layout-->
+    <style name="Widget.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:contentDescription">@string/abc_action_menu_overflow_description</item>
+    </style>
+
+
+</resources>

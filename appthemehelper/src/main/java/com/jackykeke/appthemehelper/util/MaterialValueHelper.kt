@@ -1,0 +1,54 @@
+package com.jackykeke.appthemehelper.util
+
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.annotation.ColorInt
+import androidx.core.content.ContextCompat
+
+/**
+ *
+ * @author keyuliang on 2022/9/15.
+ * @version 9999.0.0
+ * @descrption 描述 ：
+ * @copy 版权当然属于 keyuliang
+ */
+object MaterialValueHelper {
+
+    @JvmStatic
+    @ColorInt
+    fun getPrimaryTextColor(context: Context,dark:Boolean):Int{
+        return if (dark){
+            ContextCompat.getColor(context,androidx.appcompat.R.color.primary_text_default_material_light)
+        }else{
+            ContextCompat.getColor(context,androidx.appcompat.R.color.primary_text_default_material_dark)
+        }
+    }
+
+    @JvmStatic
+    @ColorInt
+    fun getSecondaryTextColor(context: Context,dark: Boolean):Int{
+        return if (dark) {
+            ContextCompat.getColor(context, androidx.appcompat.R.color.secondary_text_default_material_light)
+        } else ContextCompat.getColor(context, androidx.appcompat.R.color.secondary_text_default_material_dark)
+
+    }
+
+    @SuppressLint("PrivateResource")
+    @JvmStatic
+    @ColorInt
+    fun getPrimaryDisabledTextColor(context: Context, dark: Boolean): Int {
+        return if (dark) {
+            ContextCompat.getColor(context, androidx.appcompat.R.color.primary_text_disabled_material_light)
+        } else ContextCompat.getColor(context, androidx.appcompat.R.color.primary_text_disabled_material_dark)
+    }
+
+    @SuppressLint("PrivateResource")
+    @JvmStatic
+    @ColorInt
+    fun getSecondaryDisabledTextColor(context: Context, dark: Boolean): Int {
+        return if (dark) {
+            ContextCompat.getColor(context, androidx.appcompat.R.color.secondary_text_disabled_material_light)
+        } else ContextCompat.getColor(context, androidx.appcompat.R.color.secondary_text_disabled_material_dark)
+    }
+
+}
