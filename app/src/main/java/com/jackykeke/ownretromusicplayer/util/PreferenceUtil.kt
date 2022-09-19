@@ -1,7 +1,13 @@
 package com.jackykeke.ownretromusicplayer.util
 
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.jackykeke.ownretromusicplayer.ARTIST_DETAIL_SONG_SORT_ORDER
 import com.jackykeke.ownretromusicplayer.App
+import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
+import com.jackykeke.ownretromusicplayer.helper.SortOrder
+import com.jackykeke.ownretromusicplayer.model.Artist
+import com.jackykeke.ownretromusicplayer.model.CategoryInfo
 
 /**
  *
@@ -14,7 +20,24 @@ object PreferenceUtil {
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
 
-    val  defaultCategories = listOf(
-        CategoryInfo(CategoryInfo.)
+    val defaultCategories = listOf(
+        CategoryInfo(CategoryInfo.Category.Home, true),
+        CategoryInfo(CategoryInfo.Category.Songs, true),
+        CategoryInfo(CategoryInfo.Category.Albums, true),
+        CategoryInfo(CategoryInfo.Category.Artists, true),
+        CategoryInfo(CategoryInfo.Category.Playlists, true),
+        CategoryInfo(CategoryInfo.Category.Genres, false),
+        CategoryInfo(CategoryInfo.Category.Folder, false),
+        CategoryInfo(CategoryInfo.Category.Search, false)
     )
+
+
+    var artistDetailSongSortOrder
+        get() = sharedPreferences.getStringOrDefault(
+            ARTIST_DETAIL_SONG_SORT_ORDER,
+            SortOrder.ArtistSongSortOrder.SONG_A_Z
+        )
+        set(value) = sharedPreferences.edit { putString(ARTIST_DETAIL_SONG_SORT_ORDER, value) }
+
+
 }
