@@ -18,7 +18,7 @@ class HistoryEntity(
     val title: String,
 
     @ColumnInfo(name = "track_number")
-    val traceNumber: Int,
+    val trackNumber: Int,
     val year: Int,
     val duration: Long,
     val data: String,

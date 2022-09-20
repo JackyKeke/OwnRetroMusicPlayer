@@ -4,6 +4,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.jackykeke.ownretromusicplayer.ARTIST_DETAIL_SONG_SORT_ORDER
 import com.jackykeke.ownretromusicplayer.App
+import com.jackykeke.ownretromusicplayer.PLAYLIST_SORT_ORDER
 import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
 import com.jackykeke.ownretromusicplayer.helper.SortOrder
 import com.jackykeke.ownretromusicplayer.model.Artist
@@ -38,6 +39,13 @@ object PreferenceUtil {
             SortOrder.ArtistSongSortOrder.SONG_A_Z
         )
         set(value) = sharedPreferences.edit { putString(ARTIST_DETAIL_SONG_SORT_ORDER, value) }
+
+    var playlistSortOrder
+    get() = sharedPreferences.getStringOrDefault(
+        PLAYLIST_SORT_ORDER,
+        SortOrder.PlaylistSortOrder.PLAYLIST_A_Z
+    )
+    set(value) = sharedPreferences.edit { putString(PLAYLIST_SORT_ORDER,value) }
 
 
 }

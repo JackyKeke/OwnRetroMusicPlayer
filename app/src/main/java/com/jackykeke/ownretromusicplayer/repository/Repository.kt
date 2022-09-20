@@ -1,5 +1,6 @@
 package com.jackykeke.ownretromusicplayer.repository
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import code.name.monkey.retromusic.db.PlayCountEntity
 import com.jackykeke.ownretromusicplayer.db.HistoryEntity
@@ -94,7 +95,21 @@ interface Repository {
 
 }
 
-class RealRepository():Repository{
+class RealRepository(
+    private val context: Context,
+    private val lastFMService: LastFMService,
+    private val songRepository: SongRepository,
+    private val albumRepository: AlbumRepository,
+    private val artistRepository: ArtistRepository,
+    private val genreRepository: GenreRepository,
+    private val lastAddedRepository: LastAddedRepository,
+    private val playlistRepository: PlaylistRepository,
+    private val searchRepository: RealSearchRepository,
+    private val topPlayedRepository: TopPlayedRepository,
+    private val roomRepository: RoomRepository,
+    private val localDataRepository: LocalDataRepository,
+
+    ):Repository{
     override fun historySong(): List<HistoryEntity> {
         TODO("Not yet implemented")
     }
@@ -339,9 +354,7 @@ class RealRepository():Repository{
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteSongs(songs: List<Song>) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteSongs(songs: List<Song>) =  roomRepository.deleteSongs(songs)
 
     override suspend fun contributor(): List<Contributor> {
         TODO("Not yet implemented")
