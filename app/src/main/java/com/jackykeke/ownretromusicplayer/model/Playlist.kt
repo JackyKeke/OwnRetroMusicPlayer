@@ -2,8 +2,7 @@ package com.jackykeke.ownretromusicplayer.model
 
 import android.content.Context
 import android.os.Parcelable
-import code.name.monkey.retromusic.repository.RealPlaylistRepository
-import code.name.monkey.retromusic.util.MusicUtil
+import com.jackykeke.ownretromusicplayer.repository.RealPlaylistRepository
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
 import kotlinx.parcelize.Parcelize
 import org.koin.core.component.KoinComponent

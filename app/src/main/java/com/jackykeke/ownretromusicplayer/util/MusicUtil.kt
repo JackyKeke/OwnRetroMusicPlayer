@@ -1,5 +1,7 @@
 package com.jackykeke.ownretromusicplayer.util
 
+import android.content.Context
+import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.model.Artist
 import org.koin.core.component.KoinComponent
 
@@ -33,6 +35,21 @@ object MusicUtil :KoinComponent {
         return  tempName == "unknown" || tempName == "<unknown>"
     }
 
+
+    fun getSongCountString(context: Context,songCount:Int):String{
+        val songString = if(songCount == 1) context.resources
+            .getString(R.string.song) else context.resources.getString(R.string.songs)
+        return "$songCount $songString"
+    }
+
+    fun buildInfoString(string1: String?,string2: String?) :String{
+
+        if (string1.isNullOrEmpty()){
+            return  if (string2.isNullOrEmpty()) "" else string2
+        }
+        return if (string2.isNullOrEmpty()) if (string1.isNullOrEmpty()) "" else string1 else "$string1  •  $string2"
+
+    }
 
 
 }
