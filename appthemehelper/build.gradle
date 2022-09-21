@@ -41,4 +41,5 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$mdc_version"
     implementation "androidx.preference:preference-ktx:$preference_version"
+    testImplementation 'junit:junit:4.12'
 }

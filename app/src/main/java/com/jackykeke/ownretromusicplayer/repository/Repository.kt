@@ -9,6 +9,7 @@ import com.jackykeke.ownretromusicplayer.db.PlaylistWithSongs
 import com.jackykeke.ownretromusicplayer.db.SongEntity
 import com.jackykeke.ownretromusicplayer.fragments.search.Filter
 import com.jackykeke.ownretromusicplayer.model.*
+import com.jackykeke.ownretromusicplayer.network.LastFMService
 import com.jackykeke.ownretromusicplayer.network.model.LastFmAlbum
 import com.jackykeke.ownretromusicplayer.network.model.LastFmArtist
 import org.eclipse.egit.github.core.Contributor
