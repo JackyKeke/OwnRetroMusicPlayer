@@ -5,7 +5,6 @@ import androidx.preference.PreferenceManager
 import com.jackykeke.ownretromusicplayer.*
 import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
 import com.jackykeke.ownretromusicplayer.helper.SortOrder
-import com.jackykeke.ownretromusicplayer.model.Artist
 import com.jackykeke.ownretromusicplayer.model.CategoryInfo
 
 /**
@@ -98,7 +97,23 @@ object PreferenceUtil {
 
     val  lastAddedCutoff :Long
      get() {
+            val calendarUtil = CalendarUtil()
+         val interval =
+             when(sharedPreferences.getStringOrDefault(LAST_ADDED_CUTOFF,"this_month")){
+                 "today" -> calendarUtil.elapsedToday
+                 "this_week" -> calendarUtil.elapsedWeek
+                 "past_three_months" -> calendarUtil.getElapsedMonths(3)
+                 "this_year"-> calendarUtil.elapsedYear
+                 "this_month" -> calendarUtil.elapsedMonth
+                 else -> calendarUtil.elapsedMonth
+             }
+         return (System.currentTimeMillis() - interval) / 1000
 
      }
+
+    val isFullScreenMode
+        get() = sharedPreferences.getBoolean(
+            TOGGLE_FULL_SCREEN, false
+        )
 
 }

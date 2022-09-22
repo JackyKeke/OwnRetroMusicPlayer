@@ -18,13 +18,16 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.BaseColumns
 import android.provider.MediaStore
-import code.name.monkey.retromusic.Constants.NUMBER_OF_TOP_TRACKS
-import code.name.monkey.retromusic.model.Album
-import code.name.monkey.retromusic.model.Artist
-import code.name.monkey.retromusic.model.Song
-import code.name.monkey.retromusic.providers.HistoryStore
-import code.name.monkey.retromusic.providers.SongPlayCountStore
-import code.name.monkey.retromusic.util.PreferenceUtil
+import com.jackykeke.ownretromusicplayer.Constants.NUMBER_OF_TOP_TRACKS
+import com.jackykeke.ownretromusicplayer.model.Album
+import com.jackykeke.ownretromusicplayer.model.Artist
+import com.jackykeke.ownretromusicplayer.model.Song
+import com.jackykeke.ownretromusicplayer.providers.SongPlayCountStore
+import com.jackykeke.ownretromusicplayer.repository.RealAlbumRepository
+import com.jackykeke.ownretromusicplayer.repository.RealArtistRepository
+import com.jackykeke.ownretromusicplayer.repository.RealSongRepository
+import com.jackykeke.ownretromusicplayer.repository.SortedLongCursor
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 
 
 /**

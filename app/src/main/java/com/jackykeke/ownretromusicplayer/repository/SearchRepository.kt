@@ -12,16 +12,16 @@
  * See the GNU General Public License for more details.
  */
 
-package code.name.monkey.retromusic.repository
+package com.jackykeke.ownretromusicplayer.repository
 
 import android.content.Context
-import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.db.PlaylistWithSongs
-import code.name.monkey.retromusic.fragments.search.Filter
-import code.name.monkey.retromusic.model.Album
-import code.name.monkey.retromusic.model.Artist
-import code.name.monkey.retromusic.model.Genre
-import code.name.monkey.retromusic.model.Song
+import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.db.PlaylistWithSongs
+import com.jackykeke.ownretromusicplayer.fragments.search.Filter
+import com.jackykeke.ownretromusicplayer.model.Album
+import com.jackykeke.ownretromusicplayer.model.Artist
+import com.jackykeke.ownretromusicplayer.model.Genre
+import com.jackykeke.ownretromusicplayer.model.Song
 
 class RealSearchRepository(
     private val songRepository: SongRepository,

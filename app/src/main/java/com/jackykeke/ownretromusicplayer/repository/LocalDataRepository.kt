@@ -1,9 +1,9 @@
 package code.name.monkey.retromusic.repository
 
 import android.content.Context
-import code.name.monkey.retromusic.model.Contributor
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.jackykeke.ownretromusicplayer.model.Contributor
 
 interface LocalDataRepository {
     fun contributors(): List<Contributor>

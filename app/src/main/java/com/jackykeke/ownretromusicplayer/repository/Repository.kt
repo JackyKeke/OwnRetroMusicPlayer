@@ -3,10 +3,8 @@ package com.jackykeke.ownretromusicplayer.repository
 import android.content.Context
 import androidx.lifecycle.LiveData
 import code.name.monkey.retromusic.db.PlayCountEntity
-import com.jackykeke.ownretromusicplayer.db.HistoryEntity
-import com.jackykeke.ownretromusicplayer.db.PlaylistEntity
-import com.jackykeke.ownretromusicplayer.db.PlaylistWithSongs
-import com.jackykeke.ownretromusicplayer.db.SongEntity
+import code.name.monkey.retromusic.repository.*
+import com.jackykeke.ownretromusicplayer.db.*
 import com.jackykeke.ownretromusicplayer.fragments.search.Filter
 import com.jackykeke.ownretromusicplayer.model.*
 import com.jackykeke.ownretromusicplayer.network.LastFMService
