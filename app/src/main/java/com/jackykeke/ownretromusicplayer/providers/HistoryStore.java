@@ -106,7 +106,39 @@ public class HistoryStore  extends SQLiteOpenHelper {
 
     }
 
-    private void removeSongId(final long songId) {
+    public Cursor queryRecentIds(){
+        final SQLiteDatabase database =getReadableDatabase();
+        return database.query(
+                RecentStoreColumns.NAME,
+                new String[]{RecentStoreColumns.ID},
+                null,
+                null,
+                null,
+                null,
+                RecentStoreColumns.TIME_PLAYED+" DESC "
+        );
+    }
+
+
+    public Cursor queryRecentIds(long cutoff){
+        final boolean noCutoffTime = (cutoff== 0 );
+        final boolean reverseOrder = (cutoff<0);
+        if (reverseOrder) cutoff = -cutoff;
+
+        SQLiteDatabase database = getReadableDatabase();
+        return database.query(
+                RecentStoreColumns.NAME,
+                new String[]{RecentStoreColumns.ID},
+                noCutoffTime? null:RecentStoreColumns.TIME_PLAYED + (reverseOrder? " < ? ":" > ? "),
+                noCutoffTime?null:new String[]{String.valueOf(cutoff)},
+                null,
+                null,
+                RecentStoreColumns.TIME_PLAYED+(reverseOrder?" ASC ":" DESC ")
+        );
+
+    }
+
+    public void removeSongId(final long songId) {
         final SQLiteDatabase database = getWritableDatabase();
         database.delete(RecentStoreColumns.NAME,RecentStoreColumns.ID+" = ? ", new String[]{String.valueOf(songId)});
     }

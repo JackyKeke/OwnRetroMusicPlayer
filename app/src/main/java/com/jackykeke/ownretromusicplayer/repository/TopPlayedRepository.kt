@@ -22,6 +22,7 @@ import com.jackykeke.ownretromusicplayer.Constants.NUMBER_OF_TOP_TRACKS
 import com.jackykeke.ownretromusicplayer.model.Album
 import com.jackykeke.ownretromusicplayer.model.Artist
 import com.jackykeke.ownretromusicplayer.model.Song
+import com.jackykeke.ownretromusicplayer.providers.HistoryStore
 import com.jackykeke.ownretromusicplayer.providers.SongPlayCountStore
 import com.jackykeke.ownretromusicplayer.repository.RealAlbumRepository
 import com.jackykeke.ownretromusicplayer.repository.RealArtistRepository

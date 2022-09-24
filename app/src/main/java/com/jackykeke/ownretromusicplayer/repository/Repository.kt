@@ -2,8 +2,10 @@ package com.jackykeke.ownretromusicplayer.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import code.name.monkey.retromusic.db.PlayCountEntity
 import code.name.monkey.retromusic.repository.*
+import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.db.*
 import com.jackykeke.ownretromusicplayer.fragments.search.Filter
 import com.jackykeke.ownretromusicplayer.model.*
@@ -110,63 +112,71 @@ class RealRepository(
 
     ):Repository{
     override fun historySong(): List<HistoryEntity> {
-        TODO("Not yet implemented")
+       return roomRepository.historySongs()
     }
 
     override fun favorites(): LiveData<List<SongEntity>> {
-        TODO("Not yet implemented")
+       return roomRepository.favoritePlaylistLiveData(context.getString(R.string.favorites))
     }
 
     override fun observableHistorySongs(): LiveData<List<Song>> {
-        TODO("Not yet implemented")
+      return Transformations.map( roomRepository.observableHistorySongs()){
+          it.fromHistoryToSongs()
+      }
     }
 
     override fun albumById(albumId: Long): Album {
-        TODO("Not yet implemented")
+       return albumRepository.album(albumId)
     }
 
     override fun playlistSongs(playListId: Long): LiveData<List<SongEntity>> {
-        TODO("Not yet implemented")
+        return roomRepository.getSongs(playListId)
     }
 
     override suspend fun playlistSongs(playlistWithSongs: PlaylistWithSongs): List<Song> {
-        TODO("Not yet implemented")
+      return playlistWithSongs.songs.map {
+          it.toSong()
+      }
     }
 
     override suspend fun fetchAlbums(): List<Album> {
-        TODO("Not yet implemented")
+        albumRepository.albums()
     }
 
     override suspend fun albumByIdAsync(albumId: Long): Album {
-        TODO("Not yet implemented")
+        return  albumRepository.album(albumId)
     }
 
     override suspend fun allSongs(): List<Song> {
-        TODO("Not yet implemented")
+       return songRepository.songs()
     }
 
     override suspend fun fetchArtists(): List<Artist> {
-        TODO("Not yet implemented")
+       return artistRepository.artists()
     }
 
     override suspend fun albumArtists(): List<Artist> {
-        TODO("Not yet implemented")
+       return artistRepository.albumArtists()
     }
 
     override suspend fun fetchLegacyPlaylist(): List<Playlist> {
-        TODO("Not yet implemented")
+     return  playlistRepository.playlists()
     }
 
     override suspend fun fetchGenres(): List<Genre> {
-        TODO("Not yet implemented")
+       return genreRepository.genres()
     }
 
     override suspend fun search(query: String?, filter: Filter): MutableList<Any> {
-        TODO("Not yet implemented")
+      return searchRepository.searchAll(context, query, filter)
     }
 
     override suspend fun getPlaylistSongs(playlist: Playlist): List<Song> {
-        TODO("Not yet implemented")
+        if (playlist is AbsCustomPlaylist){
+            playlist.songs()
+        }else{
+            PlaylistSongsLoader.getPlaylistSongList(context,playlist.id)
+        }
     }
 
     override suspend fun getGenre(genreId: Long): List<Song> {

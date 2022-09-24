@@ -116,4 +116,17 @@ object PreferenceUtil {
             TOGGLE_FULL_SCREEN, false
         )
 
+    fun getRecentlyPlayedCutoffTimeMillis():Long{
+        val  calendarUtil = CalendarUtil()
+        val interval:Long  = when(sharedPreferences.getString(RECENTLY_PLAYED_CUTOFF, "")){
+
+            "today" -> calendarUtil.elapsedToday
+            "this_week" -> calendarUtil.elapsedWeek
+            "past_three_months" -> calendarUtil.getElapsedMonths(3)
+            "this_year"-> calendarUtil.elapsedYear
+            "this_month" -> calendarUtil.elapsedMonth
+            else -> calendarUtil.elapsedMonth
+        }
+        return System.currentTimeMillis() - interval
+    }
 }
