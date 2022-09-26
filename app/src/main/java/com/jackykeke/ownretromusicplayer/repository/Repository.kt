@@ -4,16 +4,17 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import code.name.monkey.retromusic.db.PlayCountEntity
+import code.name.monkey.retromusic.model.smartplaylist.NotPlayedPlaylist
 import code.name.monkey.retromusic.repository.*
-import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.*
 import com.jackykeke.ownretromusicplayer.db.*
 import com.jackykeke.ownretromusicplayer.fragments.search.Filter
 import com.jackykeke.ownretromusicplayer.model.*
 import com.jackykeke.ownretromusicplayer.network.LastFMService
 import com.jackykeke.ownretromusicplayer.network.model.LastFmAlbum
 import com.jackykeke.ownretromusicplayer.network.model.LastFmArtist
-import org.eclipse.egit.github.core.Contributor
-
+import com.jackykeke.ownretromusicplayer.util.logE
+import com.jackykeke.ownretromusicplayer.network.Result
 /**
  *
  * @author keyuliang on 2022/9/19.
@@ -24,16 +25,16 @@ import org.eclipse.egit.github.core.Contributor
 interface Repository {
 
 
-    fun historySong():List<HistoryEntity>
-    fun favorites():LiveData<List<SongEntity>>
-    fun observableHistorySongs():LiveData<List<Song>>
+    fun historySong(): List<HistoryEntity>
+    fun favorites(): LiveData<List<SongEntity>>
+    fun observableHistorySongs(): LiveData<List<Song>>
     fun albumById(albumId: Long): Album
-    fun playlistSongs(playListId:Long):LiveData<List<SongEntity>>
+    fun playlistSongs(playListId: Long): LiveData<List<SongEntity>>
 
-    suspend fun fetchAlbums():List<Album>
-    suspend fun albumByIdAsync(albumId: Long):Album
-    suspend fun allSongs():List<Song>
-    suspend fun fetchArtists():List<Artist>
+    suspend fun fetchAlbums(): List<Album>
+    suspend fun albumByIdAsync(albumId: Long): Album
+    suspend fun allSongs(): List<Song>
+    suspend fun fetchArtists(): List<Artist>
 
     suspend fun albumArtists(): List<Artist>
     suspend fun fetchLegacyPlaylist(): List<Playlist>
@@ -110,23 +111,23 @@ class RealRepository(
     private val roomRepository: RoomRepository,
     private val localDataRepository: LocalDataRepository,
 
-    ):Repository{
+    ) : Repository {
     override fun historySong(): List<HistoryEntity> {
-       return roomRepository.historySongs()
+        return roomRepository.historySongs()
     }
 
     override fun favorites(): LiveData<List<SongEntity>> {
-       return roomRepository.favoritePlaylistLiveData(context.getString(R.string.favorites))
+        return roomRepository.favoritePlaylistLiveData(context.getString(R.string.favorites))
     }
 
     override fun observableHistorySongs(): LiveData<List<Song>> {
-      return Transformations.map( roomRepository.observableHistorySongs()){
-          it.fromHistoryToSongs()
-      }
+        return Transformations.map(roomRepository.observableHistorySongs()) {
+            it.fromHistoryToSongs()
+        }
     }
 
     override fun albumById(albumId: Long): Album {
-       return albumRepository.album(albumId)
+        return albumRepository.album(albumId)
     }
 
     override fun playlistSongs(playListId: Long): LiveData<List<SongEntity>> {
@@ -134,258 +135,252 @@ class RealRepository(
     }
 
     override suspend fun playlistSongs(playlistWithSongs: PlaylistWithSongs): List<Song> {
-      return playlistWithSongs.songs.map {
-          it.toSong()
-      }
-    }
-
-    override suspend fun fetchAlbums(): List<Album> {
-        albumRepository.albums()
-    }
-
-    override suspend fun albumByIdAsync(albumId: Long): Album {
-        return  albumRepository.album(albumId)
-    }
-
-    override suspend fun allSongs(): List<Song> {
-       return songRepository.songs()
-    }
-
-    override suspend fun fetchArtists(): List<Artist> {
-       return artistRepository.artists()
-    }
-
-    override suspend fun albumArtists(): List<Artist> {
-       return artistRepository.albumArtists()
-    }
-
-    override suspend fun fetchLegacyPlaylist(): List<Playlist> {
-     return  playlistRepository.playlists()
-    }
-
-    override suspend fun fetchGenres(): List<Genre> {
-       return genreRepository.genres()
-    }
-
-    override suspend fun search(query: String?, filter: Filter): MutableList<Any> {
-      return searchRepository.searchAll(context, query, filter)
-    }
-
-    override suspend fun getPlaylistSongs(playlist: Playlist): List<Song> {
-        if (playlist is AbsCustomPlaylist){
-            playlist.songs()
-        }else{
-            PlaylistSongsLoader.getPlaylistSongList(context,playlist.id)
+        return playlistWithSongs.songs.map {
+            it.toSong()
         }
     }
 
-    override suspend fun getGenre(genreId: Long): List<Song> {
-        TODO("Not yet implemented")
+    override suspend fun fetchAlbums(): List<Album> {
+        return albumRepository.albums()
     }
+
+    override suspend fun albumByIdAsync(albumId: Long): Album {
+        return albumRepository.album(albumId)
+    }
+
+    override suspend fun allSongs(): List<Song> {
+        return songRepository.songs()
+    }
+
+    override suspend fun fetchArtists(): List<Artist> {
+        return artistRepository.artists()
+    }
+
+    override suspend fun albumArtists(): List<Artist> {
+        return artistRepository.albumArtists()
+    }
+
+    override suspend fun fetchLegacyPlaylist(): List<Playlist> {
+        return playlistRepository.playlists()
+    }
+
+    override suspend fun fetchGenres(): List<Genre> {
+        return genreRepository.genres()
+    }
+
+    override suspend fun search(query: String?, filter: Filter): MutableList<Any> {
+        return searchRepository.searchAll(context, query, filter)
+    }
+
+    override suspend fun getPlaylistSongs(playlist: Playlist): List<Song> {
+        return if (playlist is AbsCustomPlaylist) {
+            playlist.songs()
+        } else {
+            PlaylistSongsLoader.getPlaylistSongList(context, playlist.id)
+        }
+    }
+
+    override suspend fun getGenre(genreId: Long): List<Song> = genreRepository.songs(genreId)
 
     override suspend fun artistInfo(
         name: String,
         lang: String?,
         cache: String?
     ): Result<LastFmArtist> {
-        TODO("Not yet implemented")
+        return try {
+            Result.Success(
+                lastFMService.artistInfo(
+                    name,
+                    lang,
+                    cache
+                )
+            )
+        } catch (e: Exception) {
+            logE(e)
+            Result.Error(e)
+        }
     }
 
     override suspend fun albumInfo(artist: String, album: String): Result<LastFmAlbum> {
-        TODO("Not yet implemented")
+      return try {
+          val lastFmAlbum = lastFMService.albumInfo(artist,album)
+          Result.Success(lastFmAlbum)
+      }catch (e: Exception) {
+          logE(e)
+          Result.Error(e)
+      }
     }
 
-    override suspend fun artistById(artistId: Long): Artist {
-        TODO("Not yet implemented")
-    }
+    override suspend fun artistById(artistId: Long): Artist = artistRepository.artist(artistId)
 
-    override suspend fun albumArtistByName(name: String): Artist {
-        TODO("Not yet implemented")
-    }
+    override suspend fun albumArtistByName(name: String): Artist = artistRepository.albumArtist(name)
 
-    override suspend fun recentArtists(): List<Artist> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun recentArtists(): List<Artist> =lastAddedRepository.recentArtists()
 
-    override suspend fun topArtists(): List<Artist> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun topArtists(): List<Artist> = topPlayedRepository.topArtists()
 
-    override suspend fun topAlbums(): List<Album> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun topAlbums(): List<Album> =  topPlayedRepository.topAlbums()
 
-    override suspend fun recentAlbums(): List<Album> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun recentAlbums(): List<Album> = lastAddedRepository.recentAlbums()
 
     override suspend fun recentArtistsHome(): Home {
-        TODO("Not yet implemented")
+       val artists = lastAddedRepository.recentArtists().take(5)
+       return Home(artists, RECENT_ARTISTS,R.string.recent_artists)
     }
 
     override suspend fun topArtistsHome(): Home {
-        TODO("Not yet implemented")
+        val artists = topPlayedRepository.topArtists().take(5)
+        return Home(artists, TOP_ARTISTS, R.string.top_artists)
     }
 
     override suspend fun topAlbumsHome(): Home {
-        TODO("Not yet implemented")
+        val albums = topPlayedRepository.topAlbums().take(5)
+        return Home(albums, TOP_ALBUMS, R.string.top_albums)
     }
 
     override suspend fun recentAlbumsHome(): Home {
-        TODO("Not yet implemented")
+        val albums = lastAddedRepository.recentAlbums().take(5)
+        return Home(albums, RECENT_ALBUMS, R.string.recent_albums)
     }
 
     override suspend fun favoritePlaylistHome(): Home {
-        TODO("Not yet implemented")
+        val songs = favoritePlaylistSongs().map {
+            it.toSong()
+        }
+        return Home(songs, FAVOURITES,  R.string.favorites)
     }
 
     override suspend fun suggestions(): List<Song> {
-        TODO("Not yet implemented")
+        return NotPlayedPlaylist().songs().shuffled().takeIf {
+            it.size > 9
+        }?: emptyList()
     }
 
     override suspend fun genresHome(): Home {
-        TODO("Not yet implemented")
+       val genres = genreRepository.genres().shuffled()
+        return Home(genres, GENRES , R.string.genres)
     }
 
     override suspend fun playlists(): Home {
-        TODO("Not yet implemented")
+        val playlist = playlistRepository.playlists()
+        return Home(playlist, PLAYLISTS, R.string.playlists)
     }
 
     override suspend fun homeSections(): List<Home> {
-        TODO("Not yet implemented")
+        val homeSections = mutableListOf<Home>()
+        val sections : List<Home> = listOf(
+            topArtistsHome(),
+            topAlbumsHome(),
+            recentArtistsHome(),
+            recentAlbumsHome(),
+            favoritePlaylistHome()
+        )
+        for (section in sections){
+            if (section.arrayList.isNotEmpty()){
+                homeSections.add(section)
+            }
+        }
+        return homeSections
     }
 
     override suspend fun playlist(playlistId: Long): Playlist {
-        TODO("Not yet implemented")
+        return playlistRepository.playlist(playlistId)
     }
 
     override suspend fun fetchPlaylistWithSongs(): List<PlaylistWithSongs> {
-        TODO("Not yet implemented")
+        return  roomRepository.playlistWithSongs()
     }
 
-    override suspend fun insertSongs(songs: List<SongEntity>) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun insertSongs(songs: List<SongEntity>) =
+        roomRepository.insertSongs(songs)
 
-    override suspend fun checkPlaylistExists(playlistName: String): List<PlaylistEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun checkPlaylistExists(playlistName: String): List<PlaylistEntity> =
+        roomRepository.checkPlaylistExists(playlistName)
 
-    override fun checkPlaylistExists(playListId: Long): LiveData<Boolean> {
-        TODO("Not yet implemented")
-    }
+    override fun checkPlaylistExists(playListId: Long): LiveData<Boolean> =
+        roomRepository.checkPlaylistExists(playListId)
 
-    override suspend fun createPlaylist(playlistEntity: PlaylistEntity): Long {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun fetchPlaylists(): List<PlaylistEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun createPlaylist(playlistEntity: PlaylistEntity): Long =
+        roomRepository.createPlaylist(playlistEntity)
 
-    override suspend fun deleteRoomPlaylist(playlists: List<PlaylistEntity>) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun fetchPlaylists(): List<PlaylistEntity> = roomRepository.playlists()
 
-    override suspend fun renameRoomPlaylist(playlistId: Long, name: String) {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun deleteSongsInPlaylist(songs: List<SongEntity>) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteRoomPlaylist(playlists: List<PlaylistEntity>) =
+        roomRepository.deletePlaylistEntities(playlists)
 
-    override suspend fun removeSongFromPlaylist(songEntity: SongEntity) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun renameRoomPlaylist(playlistId: Long, name: String) =
+        roomRepository.renamePlaylistEntity(playlistId, name)
 
-    override suspend fun deletePlaylistSongs(playlists: List<PlaylistEntity>) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteSongsInPlaylist(songs: List<SongEntity>) =
+        roomRepository.deleteSongsInPlaylist(songs)
 
-    override suspend fun favoritePlaylist(): PlaylistEntity {
-        TODO("Not yet implemented")
-    }
+    override suspend fun removeSongFromPlaylist(songEntity: SongEntity) =
+        roomRepository.removeSongFromPlaylist(songEntity)
 
-    override suspend fun isFavoriteSong(songEntity: SongEntity): List<SongEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deletePlaylistSongs(playlists: List<PlaylistEntity>) =
+        roomRepository.deletePlaylistSongs(playlists)
 
-    override suspend fun addSongToHistory(currentSong: Song) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun favoritePlaylist(): PlaylistEntity =
+        roomRepository.favoritePlaylist(context.getString(R.string.favorites))
 
-    override suspend fun songPresentInHistory(currentSong: Song): HistoryEntity? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun isFavoriteSong(songEntity: SongEntity): List<SongEntity> =
+        roomRepository.isFavoriteSong(songEntity)
 
-    override suspend fun updateHistorySong(currentSong: Song) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun addSongToHistory(currentSong: Song) =
+        roomRepository.addSongToHistory(currentSong)
 
-    override suspend fun favoritePlaylistSongs(): List<SongEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun songPresentInHistory(currentSong: Song): HistoryEntity? =
+        roomRepository.songPresentInHistory(currentSong)
 
-    override suspend fun recentSongs(): List<Song> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateHistorySong(currentSong: Song) =
+        roomRepository.updateHistorySong(currentSong)
 
-    override suspend fun topPlayedSongs(): List<Song> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun favoritePlaylistSongs(): List<SongEntity> =
+        roomRepository.favoritePlaylistSongs(context.getString(R.string.favorites))
 
-    override suspend fun insertSongInPlayCount(playCountEntity: PlayCountEntity) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun recentSongs(): List<Song> = lastAddedRepository.recentSongs()
 
-    override suspend fun updateSongInPlayCount(playCountEntity: PlayCountEntity) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun topPlayedSongs(): List<Song> = topPlayedRepository.topTracks()
 
-    override suspend fun deleteSongInPlayCount(playCountEntity: PlayCountEntity) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun insertSongInPlayCount(playCountEntity: PlayCountEntity) =
+        roomRepository.insertSongInPlayCount(playCountEntity)
 
-    override suspend fun deleteSongInHistory(songId: Long) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateSongInPlayCount(playCountEntity: PlayCountEntity) =
+        roomRepository.updateSongInPlayCount(playCountEntity)
+
+    override suspend fun deleteSongInPlayCount(playCountEntity: PlayCountEntity) =
+        roomRepository.deleteSongInPlayCount(playCountEntity)
+
+    override suspend fun deleteSongInHistory(songId: Long) =
+        roomRepository.deleteSongInHistory(songId)
 
     override suspend fun clearSongHistory() {
-        TODO("Not yet implemented")
+        roomRepository.clearSongHistory()
     }
 
-    override suspend fun checkSongExistInPlayCount(songId: Long): List<PlayCountEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun checkSongExistInPlayCount(songId: Long): List<PlayCountEntity> =
+        roomRepository.checkSongExistInPlayCount(songId)
 
-    override suspend fun playCountSongs(): List<PlayCountEntity> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun playCountSongs(): List<PlayCountEntity> =
+        roomRepository.playCountSongs()
 
-    override suspend fun deleteSongs(songs: List<Song>) =  roomRepository.deleteSongs(songs)
+    override suspend fun deleteSongs(songs: List<Song>) = roomRepository.deleteSongs(songs)
 
-    override suspend fun contributor(): List<Contributor> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun contributor(): List<Contributor> = localDataRepository.contributors()
 
-    override suspend fun searchArtists(query: String): List<Artist> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun searchSongs(query: String): List<Song> = songRepository.songs(query)
 
-    override suspend fun searchSongs(query: String): List<Song> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun searchAlbums(query: String): List<Album> = albumRepository.albums(query)
 
-    override suspend fun searchAlbums(query: String): List<Album> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun isSongFavorite(songId: Long): Boolean =
+        roomRepository.isSongFavorite(context, songId)
 
-    override suspend fun isSongFavorite(songId: Long): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getSongByGenre(genreId: Long): Song = genreRepository.song(genreId)
 
-    override fun getSongByGenre(genreId: Long): Song {
-        TODO("Not yet implemented")
-    }
+    override suspend fun searchArtists(query: String): List<Artist> =
+        artistRepository.artists(query)
+
+
 }

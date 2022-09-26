@@ -28,7 +28,7 @@ interface RoomRepository {
     fun observableHistorySongs() : LiveData<List<HistoryEntity>>
     fun getSongs(playListId:Long):LiveData<List<SongEntity>>
 
-    suspend fun createPlayList(playlistEntity: PlaylistEntity) : Long
+    suspend fun createPlaylist(playlistEntity: PlaylistEntity) : Long
     suspend fun checkPlaylistExists(playlistName: String): List<PlaylistEntity>
     suspend fun playlists():List<PlaylistEntity>
     suspend fun playlistWithSongs(): List<PlaylistWithSongs>
@@ -74,7 +74,7 @@ class RealRoomRepository(
     override fun getSongs(playListId: Long): LiveData<List<SongEntity>> =playlistDao.songsFromPlaylist(playListId)
 
     @WorkerThread
-    override suspend fun createPlayList(playlistEntity: PlaylistEntity): Long =playlistDao.createPlaylist(playlistEntity)
+    override suspend fun createPlaylist(playlistEntity: PlaylistEntity): Long =playlistDao.createPlaylist(playlistEntity)
 
     @WorkerThread
     override suspend fun checkPlaylistExists(playlistName: String): List<PlaylistEntity>
@@ -128,7 +128,7 @@ class RealRoomRepository(
         return  if(playlist!=null){
             playlist
         }else{
-            createPlayList(PlaylistEntity(playlistName = favorite))
+            createPlaylist(PlaylistEntity(playlistName = favorite))
             playlistDao.playlist(favorite).first()
         }
 
