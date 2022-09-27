@@ -2,10 +2,12 @@ package com.jackykeke.ownretromusicplayer.util
 
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.jackykeke.appthemehelper.util.VersionUtils
 import com.jackykeke.ownretromusicplayer.*
 import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
 import com.jackykeke.ownretromusicplayer.helper.SortOrder
 import com.jackykeke.ownretromusicplayer.model.CategoryInfo
+import com.jackykeke.ownretromusicplayer.util.theme.ThemeMode
 
 /**
  *
@@ -15,6 +17,7 @@ import com.jackykeke.ownretromusicplayer.model.CategoryInfo
  * @copy 版权当然属于 keyuliang
  */
 object PreferenceUtil {
+
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
 
@@ -95,38 +98,71 @@ object PreferenceUtil {
             SortOrder.GenreSortOrder.GENRE_A_Z
         )
 
-    val  lastAddedCutoff :Long
-     get() {
+    val lastAddedCutoff: Long
+        get() {
             val calendarUtil = CalendarUtil()
-         val interval =
-             when(sharedPreferences.getStringOrDefault(LAST_ADDED_CUTOFF,"this_month")){
-                 "today" -> calendarUtil.elapsedToday
-                 "this_week" -> calendarUtil.elapsedWeek
-                 "past_three_months" -> calendarUtil.getElapsedMonths(3)
-                 "this_year"-> calendarUtil.elapsedYear
-                 "this_month" -> calendarUtil.elapsedMonth
-                 else -> calendarUtil.elapsedMonth
-             }
-         return (System.currentTimeMillis() - interval) / 1000
+            val interval =
+                when (sharedPreferences.getStringOrDefault(LAST_ADDED_CUTOFF, "this_month")) {
+                    "today" -> calendarUtil.elapsedToday
+                    "this_week" -> calendarUtil.elapsedWeek
+                    "past_three_months" -> calendarUtil.getElapsedMonths(3)
+                    "this_year" -> calendarUtil.elapsedYear
+                    "this_month" -> calendarUtil.elapsedMonth
+                    else -> calendarUtil.elapsedMonth
+                }
+            return (System.currentTimeMillis() - interval) / 1000
 
-     }
+        }
 
     val isFullScreenMode
         get() = sharedPreferences.getBoolean(
             TOGGLE_FULL_SCREEN, false
         )
 
-    fun getRecentlyPlayedCutoffTimeMillis():Long{
-        val  calendarUtil = CalendarUtil()
-        val interval:Long  = when(sharedPreferences.getString(RECENTLY_PLAYED_CUTOFF, "")){
+    fun getRecentlyPlayedCutoffTimeMillis(): Long {
+        val calendarUtil = CalendarUtil()
+        val interval: Long = when (sharedPreferences.getString(RECENTLY_PLAYED_CUTOFF, "")) {
 
             "today" -> calendarUtil.elapsedToday
             "this_week" -> calendarUtil.elapsedWeek
             "past_three_months" -> calendarUtil.getElapsedMonths(3)
-            "this_year"-> calendarUtil.elapsedYear
+            "this_year" -> calendarUtil.elapsedYear
             "this_month" -> calendarUtil.elapsedMonth
             else -> calendarUtil.elapsedMonth
         }
         return System.currentTimeMillis() - interval
     }
+
+    private val isBlackMode
+        get() = sharedPreferences.getBoolean(BLACK_THEME, false)
+
+    fun getGeneralThemeValue(isSystemDark: Boolean): ThemeMode {
+        val themeMode: String = sharedPreferences.getStringOrDefault(GENERAL_THEME, "auto")
+        return if (isBlackMode && isSystemDark && themeMode != "light") {
+            ThemeMode.DARK
+        } else {
+            if (isBlackMode && themeMode == "dark") {
+                ThemeMode.BLACK
+            } else {
+                when (themeMode) {
+                    "light" -> ThemeMode.LIGHT
+                    "dark" -> ThemeMode.DARK
+                    "auto" -> ThemeMode.AUTO
+                    else -> ThemeMode.AUTO
+                }
+            }
+        }
+    }
+
+    val materialYou
+        get() = sharedPreferences.getBoolean(MATERIAL_YOU, VersionUtils.hasS())
+
+    val isScreenOnEnabled
+        get() = sharedPreferences.getBoolean(KEEP_SCREEN_ON, false)
+
+    val isCustomFont
+        get() = sharedPreferences.getBoolean(CUSTOM_FONT, false)
+
+    val languageCode
+        get() = sharedPreferences.getString(LANGUAGE_NAME, "auto") ?: "auto"
 }

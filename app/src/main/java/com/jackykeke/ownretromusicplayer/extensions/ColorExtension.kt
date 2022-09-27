@@ -2,9 +2,14 @@ package com.jackykeke.ownretromusicplayer.extensions
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import androidx.annotation.AttrRes
+import androidx.annotation.CheckResult
 import com.jackykeke.appthemehelper.util.ATHUtil
-import com.jackykeke.appthemehelper.util.ATHUtil.resolveColor
+import androidx.annotation.ColorInt
+import androidx.core.graphics.drawable.DrawableCompat
+import com.jackykeke.appthemehelper.ThemeStore
+import com.jackykeke.appthemehelper.util.ColorUtil
 
 /**
  *
@@ -17,3 +22,16 @@ fun Context.surfaceColor() = resolveColor(com.google.android.material.R.attr.col
 
 fun Context.resolveColor(@AttrRes attr:Int,fallBackColor:Int =0)=
     ATHUtil.resolveColor(this,attr,fallBackColor)
+
+
+inline val @receiver:ColorInt Int.isColorLight
+get() = ColorUtil.isColorLight(this)
+
+@CheckResult
+fun Drawable.tint(@ColorInt color: Int): Drawable {
+    val tintedDrawable = DrawableCompat.wrap(this).mutate()
+    setTint(color)
+    return tintedDrawable
+}
+
+fun Context.accentColor() = ThemeStore.accentColor(this)
