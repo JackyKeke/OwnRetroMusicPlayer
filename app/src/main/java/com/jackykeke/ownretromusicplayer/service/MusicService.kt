@@ -10,10 +10,13 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import androidx.media.MediaBrowserServiceCompat
+import code.name.monkey.retromusic.appwidgets.AppWidgetCircle
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetCard
 import code.name.monkey.retromusic.appwidgets.AppWidgetClassic
+import code.name.monkey.retromusic.appwidgets.AppWidgetSmall
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetBig
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetMD3
+import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetText
 import com.jackykeke.ownretromusicplayer.auto.AutoMediaIDHelper
 import com.jackykeke.ownretromusicplayer.auto.AutoMusicProvider
 import com.jackykeke.ownretromusicplayer.model.Song
@@ -25,6 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import org.koin.java.KoinJavaComponent.get
+import java.util.ArrayList
 
 /**
  *
@@ -65,6 +69,9 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
     }
 
     @JvmField
+    var playingQueue = ArrayList<Song>()
+
+    @JvmField
     var position = -1
     private val appWidgetBig = AppWidgetBig.instance
     private val appWidgetCard = AppWidgetCard.instance
@@ -81,6 +88,38 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
     val currentSong: Song
         get() = getSongAt(getPosition())
 
+    private fun getPosition(): Int {
+        return position
+    }
+
+    private fun setPosition(position: Int){
+        openTrackAndPrepareNextAt(position){
+
+        }
+    }
+
+    @Synchronized
+    private fun openTrackAndPrepareNextAt(position: Int, completion: (success: Boolean) -> Unit) {
+
+        this.position = position
+        openCurrent{
+
+        }
+    }
+
+    @Synchronized
+    private fun openCurrent(completion: (success: Boolean) -> Unit) {
+
+        val force= if (!trackEndedByCrossfade){
+            true
+        }else{
+            trackEndedByCrossfade=false
+            false
+        }
+        playbackManager.setDataSource(currentSong,force){
+        }
+    }
+
     private fun getSongAt(position: Int): Song {
         return if ((position >= 0) && (position < playingQueue.size)) {
             playingQueue[position]
@@ -88,6 +127,7 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
             emptySong
         }
     }
+
 
     private val widgetIntentReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context, intent: Intent) {
