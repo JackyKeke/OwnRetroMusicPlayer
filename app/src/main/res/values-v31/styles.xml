@@ -3,4 +3,8 @@
 
     <style name="Theme.RetroMusic.MD3.Black" parent="@style/Theme.RetroMusic.MD3" />
 
+    <style name="Theme.AppWidget" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="colorSurface">@android:color/system_accent1_50</item>
+    </style>
+
 </resources>

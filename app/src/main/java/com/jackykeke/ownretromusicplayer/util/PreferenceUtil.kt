@@ -2,6 +2,9 @@ package com.jackykeke.ownretromusicplayer.util
 
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.google.gson.reflect.TypeToken
 import com.jackykeke.appthemehelper.util.VersionUtils
 import com.jackykeke.ownretromusicplayer.*
 import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
@@ -31,6 +34,25 @@ object PreferenceUtil {
         CategoryInfo(CategoryInfo.Category.Folder, false),
         CategoryInfo(CategoryInfo.Category.Search, false)
     )
+
+    var  libraryCategory:List<CategoryInfo>
+    get() {
+        val gson=Gson()
+        val collectionType = object :TypeToken<List<CategoryInfo>>(){}.type
+
+        val data = sharedPreferences.getStringOrDefault(LIBRARY_CATEGORIES,
+            gson.toJson(defaultCategories, collectionType))
+        return try {
+            Gson().fromJson(data,collectionType)
+        }catch (e:JsonSyntaxException){
+            e.printStackTrace()
+            return defaultCategories
+        }
+    }
+    set(value) {
+        val collectionType = object : TypeToken<List<CategoryInfo?>?>() {}.type
+        sharedPreferences.edit { putString(LIBRARY_CATEGORIES,Gson().toJson(value,collectionType)) }
+    }
 
 
     var artistDetailSongSortOrder
@@ -165,4 +187,14 @@ object PreferenceUtil {
 
     val languageCode
         get() = sharedPreferences.getString(LANGUAGE_NAME, "auto") ?: "auto"
+
+    var albumArtistsOnly
+        get() = sharedPreferences.getBoolean(
+            ALBUM_ARTISTS_ONLY,
+            false
+        )
+        set(value) = sharedPreferences.edit { putBoolean(ALBUM_ARTISTS_ONLY, value) }
+
+    val isExpandPanel get() = sharedPreferences.getBoolean(EXPAND_NOW_PLAYING_PANEL, false)
+
 }

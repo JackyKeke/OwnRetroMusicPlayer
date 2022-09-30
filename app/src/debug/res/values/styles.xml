@@ -6,4 +6,9 @@
         <item name="fontFamily">@font/sans</item>
     </style>
 
+    <style name="TextViewSubtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">@font/sans</item>
+    </style>
+
+
 </resources>

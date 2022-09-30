@@ -10,5 +10,7 @@
 
 
     <color name="darkColorSurface">#202124</color>
+    <color name="blackColorSurface">#000000</color>
+
 
 </resources>

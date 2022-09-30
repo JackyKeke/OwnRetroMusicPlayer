@@ -1,9 +1,15 @@
 package com.jackykeke.ownretromusicplayer.util
 
+import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
+import androidx.core.net.toUri
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.model.Artist
+import com.jackykeke.ownretromusicplayer.model.Song
+import com.jackykeke.ownretromusicplayer.repository.Repository
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 /**
  *
@@ -16,6 +22,7 @@ object MusicUtil :KoinComponent {
 
 
 
+    private val repository = get<Repository>()
 
     fun isVariousArtists(artistName:String?):Boolean {
 
@@ -51,5 +58,14 @@ object MusicUtil :KoinComponent {
 
     }
 
+
+
+    @JvmStatic
+    fun getMediaStoreAlbumCoverUri(albumId: Long): Uri {
+        val sArtworkUri = "content://media/external/audio/albumart".toUri()
+        return ContentUris.withAppendedId(sArtworkUri, albumId)
+    }
+
+    suspend fun isFavorite(song: Song) = repository.isSongFavorite(song.id)
 
 }

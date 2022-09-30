@@ -1,6 +1,8 @@
 package com.jackykeke.ownretromusicplayer.activities.base
 
+import android.os.Bundle
 import com.jackykeke.ownretromusicplayer.interfaces.IMusicServiceEventListener
+import com.jackykeke.ownretromusicplayer.repository.RealRepository
 import org.koin.android.ext.android.inject
 
 /**
@@ -14,7 +16,14 @@ abstract class AbsMusicServiceActivity : AbsBaseActivity(), IMusicServiceEventLi
 
 
     private  val mMusicServiceEventListeners = ArrayList<IMusicServiceEventListener>()
-    private val repository:RealRepository by inject()
+    private val repository: RealRepository by inject()
 
+    private var serviceToken:MusicPlayerRemote.ServiceToken? = null
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+    }
 
 }

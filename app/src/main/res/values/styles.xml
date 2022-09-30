@@ -46,4 +46,8 @@
         <item name="android:fontFamily">@font/manrope</item>
     </style>
 
+    <style name="Theme.AppWidget" parent="">
+        <item name="colorSurface">@color/md_black_1000</item>
+    </style>
+
 </resources>
