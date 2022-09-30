@@ -20,6 +20,7 @@ import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.activities.MainActivity
 import com.jackykeke.ownretromusicplayer.appwidget.base.BaseAppWidget
 import com.jackykeke.ownretromusicplayer.extensions.getTintedDrawable
+import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension
 import com.jackykeke.ownretromusicplayer.glide.palette.BitmapPaletteWrapper
 import com.jackykeke.ownretromusicplayer.service.MusicService
 import com.jackykeke.ownretromusicplayer.service.MusicService.Companion.ACTION_REWIND

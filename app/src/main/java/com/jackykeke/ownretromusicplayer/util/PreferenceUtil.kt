@@ -197,4 +197,11 @@ object PreferenceUtil {
 
     val isExpandPanel get() = sharedPreferences.getBoolean(EXPAND_NOW_PLAYING_PANEL, false)
 
+    val isIgnoreMediaStoreArtwork
+        get() = sharedPreferences.getBoolean(
+            IGNORE_MEDIA_STORE_ARTWORK,
+            false
+        )
+
+
 }

@@ -5,9 +5,11 @@ import com.bumptech.glide.annotation.GlideExtension
 import com.bumptech.glide.annotation.GlideType
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.glide.audiocover.AudioFileCover
 import com.jackykeke.ownretromusicplayer.glide.palette.BitmapPaletteWrapper
 import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.util.MusicUtil.getMediaStoreAlbumCoverUri
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 
 /**
  *
@@ -43,6 +45,10 @@ object RetroGlideExtension {
         }else{
             getMediaStoreAlbumCoverUri(song.albumId)
         }
+    }
+
+    fun getSongModel(song: Song):Any{
+        return getSongModel(song,PreferenceUtil.isIgnoreMediaStoreArtwork)
     }
 
 }
