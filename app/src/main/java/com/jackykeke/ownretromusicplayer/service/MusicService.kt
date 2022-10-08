@@ -8,8 +8,11 @@ import android.content.SharedPreferences
 import android.os.*
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_NONE
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import androidx.media.MediaBrowserServiceCompat
+import androidx.preference.PreferenceManager
 import code.name.monkey.retromusic.appwidgets.AppWidgetCircle
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetCard
 import code.name.monkey.retromusic.appwidgets.AppWidgetClassic
@@ -19,6 +22,7 @@ import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetMD3
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetText
 import com.jackykeke.ownretromusicplayer.auto.AutoMediaIDHelper
 import com.jackykeke.ownretromusicplayer.auto.AutoMusicProvider
+import com.jackykeke.ownretromusicplayer.extensions.uri
 import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.model.Song.Companion.emptySong
 import com.jackykeke.ownretromusicplayer.service.playback.Playback
@@ -147,6 +151,69 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
 
 
     }
+
+    private val isLastTrack: Boolean
+        get() = getPosition() == playingQueue.size - 1
+
+    var repeatMode = 0
+        private set(value) {
+            when (value) {
+                REPEAT_MODE_NONE, REPEAT_MODE_ALL, REPEAT_MODE_THIS -> {
+                    field = value
+                    PreferenceManager.getDefaultSharedPreferences(this).edit {
+                        putInt(SAVED_REPEAT_MODE, value)
+                    }
+                    prepareNext()
+                    handleAndSendChangeInternal(REPEAT_MODE_CHANGED)
+                }
+            }
+        }
+
+    private fun prepareNext() {
+        prepareNextImpl()
+    }
+
+    @Synchronized
+    fun prepareNextImpl() {
+        try {
+            val nextPosition = getNextPosition(false)
+            playbackManager.setNextDataSource(getSongAt(nextPosition).uri.toString())
+            this.nextPosition = nextPosition
+        } catch (ignored: Exception) {
+        }
+    }
+
+    private fun getNextPosition(force: Boolean): Int {
+        var position = getPosition() + 1
+        when (repeatMode) {
+            REPEAT_MODE_ALL -> if (isLastTrack) {
+                position = 0
+            }
+            REPEAT_MODE_THIS -> if (force) {
+                if (isLastTrack) {
+                    position = 0
+                }
+            } else {
+                position -= 1
+            }
+            REPEAT_MODE_NONE -> if (isLastTrack) {
+                position -= 1
+            }
+            else -> if (isLastTrack) {
+                position -= 1
+            }
+        }
+        return position
+    }
+
+
+
+    val  nextSong :Song? get() = if (isLastTrack && repeatMode == REPEAT_MODE_NONE){
+        null
+    } else {
+        getSongAt(getNextPosition(false))
+    }
+
 
     override fun onCreate() {
         super.onCreate()

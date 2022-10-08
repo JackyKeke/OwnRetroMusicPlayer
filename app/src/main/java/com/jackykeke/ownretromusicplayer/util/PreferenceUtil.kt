@@ -203,5 +203,33 @@ object PreferenceUtil {
             false
         )
 
+    val crossFadeDuration get() = sharedPreferences.getInt(CROSS_FADE_DURATION,0)
+
+    val isCrossfadeEnabled get() = crossFadeDuration > 0
+
+    val isAudioFocusEnabled
+        get() = sharedPreferences.getBoolean(
+            MANAGE_AUDIO_FOCUS, false
+        )
+
+    var playbackSpeed
+        get() = sharedPreferences
+            .getFloat(PLAYBACK_SPEED, 1F)
+        set(value) = sharedPreferences.edit { putFloat(PLAYBACK_SPEED, value) }
+
+    var playbackPitch
+        get() = sharedPreferences
+            .getFloat(PLAYBACK_PITCH, 1F)
+        set(value) = sharedPreferences.edit { putFloat(PLAYBACK_PITCH, value) }
+
+    val isGapLessPlayback
+        get() = sharedPreferences.getBoolean(
+            GAP_LESS_PLAYBACK, false
+        )
+
+    var audioFadeDuration
+        get() = sharedPreferences
+            .getInt(AUDIO_FADE_DURATION, 0)
+        set(value) = sharedPreferences.edit { putInt(AUDIO_FADE_DURATION, value) }
 
 }

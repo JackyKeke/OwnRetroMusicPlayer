@@ -43,6 +43,10 @@ class PlaybackManager(val context: Context) {
 
     private fun createLocalPlayback(): Playback {
         return if (PreferenceUtil.crossFadeDuration == 0){
+            MultiPlayer(context)
+        }else{
+            CrossFadePlayer(context)
+        }
     }
 
 }

@@ -3,6 +3,7 @@ package com.jackykeke.ownretromusicplayer.util
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.core.net.toUri
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.model.Artist
@@ -67,5 +68,12 @@ object MusicUtil :KoinComponent {
     }
 
     suspend fun isFavorite(song: Song) = repository.isSongFavorite(song.id)
+
+    fun getSongFileUri(songId:Long) :Uri{
+        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        songId)
+    }
+
+
 
 }
