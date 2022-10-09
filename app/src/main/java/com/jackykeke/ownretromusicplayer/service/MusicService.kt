@@ -27,6 +27,7 @@ import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.model.Song.Companion.emptySong
 import com.jackykeke.ownretromusicplayer.service.playback.Playback
 import com.jackykeke.ownretromusicplayer.util.PackageValidator
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.crossFadeDuration
 import com.jackykeke.ownretromusicplayer.volume.OnAudioVolumeChangedListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,8 +121,44 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
             trackEndedByCrossfade=false
             false
         }
-        playbackManager.setDataSource(currentSong,force){
+        playbackManager.setDataSource(currentSong,force){ success ->
+            completion(success)
         }
+    }
+
+    fun switchToLocalPlayback(){
+        playbackManager.switchToLocalPlayback(this::restorePlaybackState)
+    }
+
+    private fun restorePlaybackState(wasPlaying:Boolean,progress:Int) {
+
+        playbackManager.setCallbacks(this)
+
+        openTrackAndPrepareNextAt(position){
+            success ->
+            if (success){
+                seek(progress)
+                if (wasPlaying){
+                    play()
+                }else{
+                    pause()
+                }
+            }
+        }
+        playbackManager.setCrossFadeDuration(crossFadeDuration)
+
+    }
+
+    @Synchronized
+    fun seek(millis: Int) :Int{
+        return try {
+            val newPosition = playbackManager.seek(millis)
+            throttledSeekHandler?.notifySeek()
+            newPosition
+        } catch (e: Exception) {
+            -1
+        }
+
     }
 
     private fun getSongAt(position: Int): Song {

@@ -13,3 +13,4 @@ import com.jackykeke.ownretromusicplayer.util.MusicUtil
 
 val Song.uri get() = MusicUtil.getSongFileUri(songId = id)
 
+val Song.albumArtUri get() = MusicUtil.getMediaStoreAlbumCoverUri(albumId)

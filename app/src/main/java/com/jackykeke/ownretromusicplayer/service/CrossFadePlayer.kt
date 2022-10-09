@@ -6,6 +6,8 @@ import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.os.PowerManager
 import com.jackykeke.appthemehelper.util.VersionUtils.hasMarshmallow
+import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.extensions.showToast
 import com.jackykeke.ownretromusicplayer.extensions.uri
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
 import com.jackykeke.ownretromusicplayer.model.Song
@@ -13,6 +15,7 @@ import com.jackykeke.ownretromusicplayer.service.AudioFader.Companion.createFade
 import com.jackykeke.ownretromusicplayer.service.playback.Playback
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.crossFadeDuration
+import com.jackykeke.ownretromusicplayer.util.logE
 import kotlinx.coroutines.*
 import java.time.Duration
 
@@ -194,19 +197,50 @@ class CrossFadePlayer (context: Context) : LocalPlayback(context){
     }
 
     override fun position(): Int {
-        TODO("Not yet implemented")
+        return if (!mIsInitialized) {
+            -1
+        } else try {
+            getCurrentPlayer()?.currentPosition!!
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            -1
+        }
     }
 
     override fun seek(whereto: Int): Int {
-        TODO("Not yet implemented")
+        getNextPlayer()?.stop()
+        return try {
+            getCurrentPlayer()?.seekTo(whereto)
+            whereto
+        }catch (e:IllegalStateException){
+            e.printStackTrace()
+            -1
+        }
     }
 
     override fun setVolume(vol: Float): Boolean {
-        TODO("Not yet implemented")
+        cancelFade()
+        return try {
+            getCurrentPlayer()?.setVolume(vol, vol)
+            true
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            false
+        }
+
     }
 
     override fun setAudioSessionId(sessionId: Int): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            getCurrentPlayer()?.audioSessionId = sessionId
+            true
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            false
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            false
+        }
     }
 
     override fun setCrossFadeDuration(duration: Int) {
@@ -220,13 +254,35 @@ class CrossFadePlayer (context: Context) : LocalPlayback(context){
         }
     }
 
+    private fun pauseFade() {
+        crossFadeAnimator?.pause()
+    }
+
+    private fun resumeFade() {
+        if (crossFadeAnimator?.isPaused == true) {
+            crossFadeAnimator?.resume()
+        }
+    }
+
+
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
-        TODO("Not yet implemented")
+        mIsInitialized = false
+        mp?.release()
+        player1= MediaPlayer()
+        player2= MediaPlayer()
+        mIsInitialized=true
+        mp?.setWakeMode(context,PowerManager.PARTIAL_WAKE_LOCK)
+        context.showToast(R.string.unplayable_file)
+        logE(what.toString()+extra)
+        return false
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
-        TODO("Not yet implemented")
+        if (mp == getCurrentPlayer()) {
+            callbacks?.onTrackEnded()
+        }
     }
+
 
 }
 
