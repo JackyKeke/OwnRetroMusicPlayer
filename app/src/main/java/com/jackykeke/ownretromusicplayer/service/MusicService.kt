@@ -17,6 +17,7 @@ import code.name.monkey.retromusic.appwidgets.AppWidgetCircle
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetCard
 import code.name.monkey.retromusic.appwidgets.AppWidgetClassic
 import code.name.monkey.retromusic.appwidgets.AppWidgetSmall
+import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetBig
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetMD3
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetText
@@ -28,6 +29,7 @@ import com.jackykeke.ownretromusicplayer.model.Song.Companion.emptySong
 import com.jackykeke.ownretromusicplayer.service.playback.Playback
 import com.jackykeke.ownretromusicplayer.util.PackageValidator
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.crossFadeDuration
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.playbackSpeed
 import com.jackykeke.ownretromusicplayer.volume.OnAudioVolumeChangedListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +104,9 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
 
         }
     }
+
+    private var throttledSeekHandler: ThrottledSeekHandler? = null
+
 
     @Synchronized
     private fun openTrackAndPrepareNextAt(position: Int, completion: (success: Boolean) -> Unit) {
@@ -314,6 +319,67 @@ class MusicService : MediaBrowserServiceCompat(),SharedPreferences.OnSharedPrefe
 
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         TODO("Not yet implemented")
+    }
+
+    val songProgressMillis: Int
+        get() = playbackManager.songProgressMillis
+
+    fun updateMediaSessionPlaybackState(){
+        val stateBuilder = PlaybackStateCompat.Builder()
+            .setActions(MEDIA_SESSION_ACTIONS)
+            .setState(
+                if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+            songProgressMillis.toLong(),
+                playbackSpeed
+            )
+
+        setCustomAction(stateBuilder)
+    }
+
+    private fun setCustomAction(stateBuilder: PlaybackStateCompat.Builder) {
+
+        var  repeatIcon = R.drawable.ic_repeat
+        if (repeatMode == REPEAT_MODE_THIS) {
+            repeatIcon = R.drawable.ic_repeat_one
+        }else if (repeatMode == REPEAT_MODE_ALL){
+            repeatIcon =R.drawable.ic_repeat_white_circle
+        }
+
+        stateBuilder.addCustomAction(
+            PlaybackStateCompat.CustomAction.Builder(
+                CYCLE_REPEAT, getString(R.string.action_cycle_repeat), repeatIcon
+            )
+                .build()
+        )
+
+        val shuffleIcon = if (getShuffleMode() == SHUFFLE_MODE_NONE) R.drawable.ic_shuffle_off_circled
+        else R.drawable.ic_shuffle_on_circled
+
+        stateBuilder.addCustomAction(
+            PlaybackStateCompat.CustomAction.Builder(
+                TOGGLE_SHUFFLE, getString(R.string.action_toggle_shuffle), shuffleIcon
+            )
+                .build()
+        )
+    }
+
+    @JvmField
+    var shuffleMode = 0
+    private val songPlayCountHelper = SongPlayCountHelper()
+
+    private fun getShuffleMode(): Int {
+        return shuffleMode
+    }
+
+    fun setShuffleMode(shuffleMode: Int){
+        PreferenceManager.getDefaultSharedPreferences(this).edit {
+            putInt(SAVED_SHUFFLE_MODE,shuffleMode)
+        }
+        when(shuffleMode){
+            SHUFFLE_MODE_SHUFFLE -> {
+
+            }
+        }
     }
 
     fun runOnUiThread(runnable: Runnable?) {
