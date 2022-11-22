@@ -309,6 +309,18 @@ class MusicService : MediaBrowserServiceCompat(),
          }
     }
 
+    private fun sendChangeInternal(what: String){
+        sendBroadcast(Intent(what))
+        appWidgetBig.notifyChange(this,what)
+        appWidgetClassic.notifyChange(this, what)
+        appWidgetSmall.notifyChange(this, what)
+        appWidgetCard.notifyChange(this, what)
+        appWidgetText.notifyChange(this, what)
+        appWidgetMd3.notifyChange(this, what)
+        appWidgetCircle.notifyChange(this, what)
+    }
+
+
     private fun savePosition() {
         PreferenceManager.getDefaultSharedPreferences(this).edit {
             putInt(SAVED_POSITION, getPosition())
@@ -328,6 +340,13 @@ class MusicService : MediaBrowserServiceCompat(),
                  completion(isFavorite)
              }
          }
+    }
+
+    private fun setupMediaSession(){
+        val mediaButtonReceiverComponentName = ComponentName(applicationContext,
+            MediaButtonIntentReceiver::class.java)
+
+        val mediaButtonIntent =Intent(Intent.ACTION_MEDIA_BUTTON)
     }
 
     val isPlaying: Boolean
