@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30"/>
 <!--    Android关闭屏幕时不锁屏 权限-->
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />

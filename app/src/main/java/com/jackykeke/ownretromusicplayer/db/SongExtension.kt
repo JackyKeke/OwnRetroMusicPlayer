@@ -36,6 +36,12 @@ fun List<HistoryEntity>.fromHistoryToSongs(): List<Song> {
     }
 }
 
+fun List<SongEntity>.toSongs(): List<Song> {
+    return map {
+        it.toSong()
+    }
+}
+
 
 fun HistoryEntity.toSong(): Song {
     return Song(

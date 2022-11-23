@@ -232,4 +232,8 @@ object PreferenceUtil {
             .getInt(AUDIO_FADE_DURATION, 0)
         set(value) = sharedPreferences.edit { putInt(AUDIO_FADE_DURATION, value) }
 
+    var isClassicNotification
+        get() = sharedPreferences.getBoolean(CLASSIC_NOTIFICATION, false)
+        set(value) = sharedPreferences.edit { putBoolean(CLASSIC_NOTIFICATION, value) }
+
 }
