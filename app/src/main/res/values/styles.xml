@@ -50,4 +50,10 @@
         <item name="colorSurface">@color/md_black_1000</item>
     </style>
 
+
+    <style name="Theme.RetroMusic.Notification" parent="@android:style/TextAppearance.StatusBar.EventContent" />
+
+    <style name="Theme.RetroMusic.Notification.Title" parent="@android:style/TextAppearance.StatusBar.EventContent.Title" />
+
+
 </resources>

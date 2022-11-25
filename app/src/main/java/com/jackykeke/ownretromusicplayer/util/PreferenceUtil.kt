@@ -236,4 +236,14 @@ object PreferenceUtil {
         get() = sharedPreferences.getBoolean(CLASSIC_NOTIFICATION, false)
         set(value) = sharedPreferences.edit { putBoolean(CLASSIC_NOTIFICATION, value) }
 
+
+    var isColoredNotification
+        get() = sharedPreferences.getBoolean(
+            COLORED_NOTIFICATION, true
+        )
+        set(value) = sharedPreferences.edit {
+            putBoolean(COLORED_NOTIFICATION, value)
+        }
+
+
 }

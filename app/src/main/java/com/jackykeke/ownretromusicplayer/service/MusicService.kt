@@ -37,6 +37,7 @@ import com.jackykeke.ownretromusicplayer.providers.HistoryStore
 import com.jackykeke.ownretromusicplayer.providers.MusicPlaybackQueueStore
 import com.jackykeke.ownretromusicplayer.providers.SongPlayCountStore
 import com.jackykeke.ownretromusicplayer.service.notification.PlayingNotification
+import com.jackykeke.ownretromusicplayer.service.notification.PlayingNotificationClassic
 import com.jackykeke.ownretromusicplayer.service.notification.PlayingNotificationImpl24
 import com.jackykeke.ownretromusicplayer.service.playback.Playback
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
@@ -643,7 +644,9 @@ class MusicService : MediaBrowserServiceCompat(),
     private fun initNotification() {
 
         playingNotification = if (VersionUtils.hasNougat() && !isClassicNotification) {
-            PlayingNotificationImpl24
+            PlayingNotificationImpl24.from(this,notificationManager!!,mediaSession!!)
+        }else{
+            PlayingNotificationClassic.from()
         }
     }
 

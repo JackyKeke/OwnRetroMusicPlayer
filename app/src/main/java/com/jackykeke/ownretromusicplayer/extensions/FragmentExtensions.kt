@@ -24,3 +24,13 @@ fun Context.isSystemDarkModelEnabled():Boolean{
     return isBatterySaverEnabled or isDarkModeEnabled
 
 }
+
+fun Context.isSystemDarkModeEnabled():Boolean{
+
+    val isBatterySaverEnabled = getSystemService<PowerManager>()?.isPowerSaveMode ?: false
+
+    val isDarkModeEnabled = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ) == Configuration.UI_MODE_NIGHT_YES
+
+    return isBatterySaverEnabled or isDarkModeEnabled
+}
+

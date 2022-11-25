@@ -1,8 +1,13 @@
 package com.jackykeke.ownretromusicplayer.service.notification
 
+import android.annotation.SuppressLint
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import com.jackykeke.appthemehelper.util.VersionUtils
@@ -17,6 +22,9 @@ import com.jackykeke.ownretromusicplayer.service.MusicService.Companion.ACTION_T
 import com.jackykeke.ownretromusicplayer.service.MusicService.Companion.TOGGLE_FAVORITE
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import code.name.monkey.retromusic.glide.GlideApp
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension
 
 /**
  *
@@ -136,15 +144,69 @@ class PlayingNotificationImpl24(
         val bigNotificationImageSize =  context.resources
             .getDimensionPixelSize(R.dimen.notification_big_image_size)
 
-        GlideApp
+        GlideApp.with(context)
+            .asBitmap()
+            .songCoverOptions(song)
+            .load(RetroGlideExtension.getSongModel(song))
+            //.checkIgnoreMediaStore()
+            .centerCrop()
+            .into(object : CustomTarget<Bitmap>(
+                bigNotificationImageSize,
+                bigNotificationImageSize
+            ) {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    setLargeIcon(resource)
+                    onUpdate()
+                }
+
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    super.onLoadFailed(errorDrawable)
+                    setLargeIcon(
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.default_audio_art
+                        )
+                    )
+                    onUpdate()
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    setLargeIcon(
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.default_audio_art
+                        )
+                    )
+                    onUpdate()
+                }
+            })
 
     }
 
+    @SuppressLint("RestrictedApi")
     override fun setPlaying(isPlaying: Boolean) {
-
+        mActions[2]=buildPlayAction(isPlaying)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun updateFavorite(isFavorite: Boolean) {
+        mActions[0] = buildFavoriteAction(isFavorite)
+    }
 
+
+
+
+    companion object {
+
+        fun from(
+            context: MusicService,
+            notificationManager: NotificationManager,
+            mediaSession: MediaSessionCompat,
+        ): PlayingNotification {
+            if (VersionUtils.hasOreo()) {
+                createNotificationChannel(context, notificationManager)
+            }
+            return PlayingNotificationImpl24(context, mediaSession.sessionToken)
+        }
     }
 }
