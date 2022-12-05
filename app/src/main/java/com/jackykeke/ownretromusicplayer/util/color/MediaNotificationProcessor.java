@@ -7,7 +7,8 @@ package com.jackykeke.ownretromusicplayer.util.color;
  * @copy 版权当然属于 keyuliang
  */
 
-import android.app.Notification;
+import static com.jackykeke.ownretromusicplayer.util.color.NotificationColorUtil.calculateLuminance;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,7 +23,9 @@ import com.jackykeke.appthemehelper.util.ColorUtil;
 
 import java.util.List;
 
-/** A class the processes media notifications and extracts the right text and background colors. */
+/**
+ * A class the processes media notifications and extracts the right text and background colors.
+ */
 public class MediaNotificationProcessor {
 
 
@@ -34,7 +37,9 @@ public class MediaNotificationProcessor {
      */
     private static final float MIN_SATURATION_WHEN_DECIDING = 0.19f;
 
-    /** Minimum fraction that any color must have to be picked up as a text color */
+    /**
+     * Minimum fraction that any color must have to be picked up as a text color
+     */
     private static final double MINIMUM_IMAGE_FRACTION = 0.002;
 
     /**
@@ -42,7 +47,9 @@ public class MediaNotificationProcessor {
      */
     private static final float POPULATION_FRACTION_FOR_DOMINANT = 0.01f;
 
-    /** The population fraction to select a white or black color as the background over a color. */
+    /**
+     * The population fraction to select a white or black color as the background over a color.
+     */
     private static final float POPULATION_FRACTION_FOR_WHITE_OR_BLACK = 2.5f;
 
     private static final float BLACK_MAX_LIGHTNESS = 0.08f;
@@ -72,13 +79,11 @@ public class MediaNotificationProcessor {
     private final Context context;
 
 
-
-    public MediaNotificationProcessor(Context context,Drawable drawable){
+    public MediaNotificationProcessor(Context context, Drawable drawable) {
         this.context = context;
         this.drawable = drawable;
         getMediaPalette();
     }
-
 
 
     public MediaNotificationProcessor(Context context, Bitmap bitmap) {
@@ -87,30 +92,29 @@ public class MediaNotificationProcessor {
         getMediaPalette();
     }
 
-    public MediaNotificationProcessor(Context context){
+    public MediaNotificationProcessor(Context context) {
         this.context = context;
     }
-
 
 
     private void getMediaPalette() {
 
         Bitmap bitmap;
-        if (drawable != null){
+        if (drawable != null) {
 
             int width = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
 
             int area = width * height;
-            if (area > RESIZE_BITMAP_AREA){
-                double factor = Math.sqrt((float)RESIZE_BITMAP_AREA /area);
-                width = (int) (factor*width);
-                height = (int) (factor*height);
+            if (area > RESIZE_BITMAP_AREA) {
+                double factor = Math.sqrt((float) RESIZE_BITMAP_AREA / area);
+                width = (int) (factor * width);
+                height = (int) (factor * height);
             }
 
-            bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
+            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
-            drawable.setBounds(0,0,width,height);
+            drawable.setBounds(0, 0, width, height);
             drawable.draw(canvas);
 
             // for the background we only take the left side of the image to ensure
@@ -146,10 +150,109 @@ public class MediaNotificationProcessor {
 
     }
 
+    private int selectForegroundColor(int backgroundColor, Palette palette) {
+        if (isColorLight(backgroundColor)) {
+            return selectForegroundColorForSwatches(
+                    palette.getDarkVibrantSwatch(),
+                    palette.getVibrantSwatch(),
+                    palette.getDarkMutedSwatch(),
+                    palette.getMutedSwatch(),
+                    palette.getDominantSwatch(),
+                    Color.BLACK);
+        } else {
+            return selectForegroundColorForSwatches(
+                    palette.getLightVibrantSwatch(),
+                    palette.getVibrantSwatch(),
+                    palette.getLightMutedSwatch(),
+                    palette.getMutedSwatch(),
+                    palette.getDominantSwatch(),
+                    Color.WHITE);
+        }
+    }
+
+    //Swatch 样本
+    private int selectForegroundColorForSwatches(Palette.Swatch moreVibrant,
+                                                 Palette.Swatch vibrant,
+                                                 Palette.Swatch moreMutedSwatch,
+                                                 Palette.Swatch mutedSwatch,
+                                                 Palette.Swatch dominantSwatch,
+                                                 int fallbackColor) {
+
+        Palette.Swatch coloredCandidate = selectVibrantCandidate(moreVibrant,vibrant);
+        if (coloredCandidate == null){
+            coloredCandidate = selectMutedCandidate(mutedSwatch,moreMutedSwatch);
+        }
+
+        if (coloredCandidate!=null){
+            if (dominantSwatch == coloredCandidate){
+                return coloredCandidate.getRgb();
+            }else if ((float)coloredCandidate.getPopulation()/dominantSwatch.getPopulation() < POPULATION_FRACTION_FOR_DOMINANT
+               && dominantSwatch.getHsl()[1] > MIN_SATURATION_WHEN_DECIDING){
+                return dominantSwatch.getRgb();
+            }else {
+                return coloredCandidate.getRgb();
+            }
+
+        }else if (hasEnoughPopulation(dominantSwatch)){
+            return dominantSwatch.getRgb();
+        }else {
+            return fallbackColor;
+        }
+
+    }
+
+    //选择静音候选
+    private Palette.Swatch selectMutedCandidate(Palette.Swatch first, Palette.Swatch second) {
+        boolean firstValid = hasEnoughPopulation(first);
+        boolean secondValid = hasEnoughPopulation(second);
+
+        if (firstValid && secondValid){
+            float firstSaturation = first.getHsl()[1];
+            float secondSaturation = second.getHsl()[1];
+            float populationFraction = first.getPopulation() / (float) second.getPopulation();
+            if (firstSaturation * populationFraction > secondSaturation) {
+                return first;
+            } else {
+                return second;
+            }
+        } else if (firstValid) {
+            return first;
+        } else if (secondValid) {
+            return second;
+        }
+        return null;
+    }
+
+    private Palette.Swatch selectVibrantCandidate(Palette.Swatch first, Palette.Swatch second) {
+        boolean firstValid = hasEnoughPopulation(first);
+        boolean secondValid = hasEnoughPopulation(second);
+        if (firstValid && secondValid) {
+            int firstPopulation = first.getPopulation();
+            int secondPopulation = second.getPopulation();
+            if (firstPopulation / (float) secondPopulation < POPULATION_FRACTION_FOR_MORE_VIBRANT) {
+                return second;
+            } else {
+                return first;
+            }
+        } else if (firstValid) {
+            return first;
+        } else if (secondValid) {
+            return second;
+        }
+        return null;
+    }
+
+    private boolean hasEnoughPopulation(Palette.Swatch swatch) {
+        // We want a fraction that is at least 1% of the image
+        return swatch != null
+                && (swatch.getPopulation() / (float) RESIZE_BITMAP_AREA > MINIMUM_IMAGE_FRACTION);
+
+    }
+
     private void ensureColors(int backgroundColor, int mForegroundColor) {
 
-        double backLum = NotificationColorUtil.calculateLuminance(backgroundColor);
-        double textLum = NotificationColorUtil.calculateLuminance(mForegroundColor);
+        double backLum = calculateLuminance(backgroundColor);
+        double textLum = calculateLuminance(mForegroundColor);
         double contrast = NotificationColorUtil.calculateContrast(mForegroundColor, backgroundColor);
         // We only respect the given colors if worst case Black or White still has
         // contrast
@@ -159,15 +262,15 @@ public class MediaNotificationProcessor {
                         || backLum <= textLum
                         && !NotificationColorUtil.satisfiesTextContrast(backgroundColor, Color.WHITE);
 
-        if (contrast  < 4.5f){
-            if (backgroundLight){
+        if (contrast < 4.5f) {
+            if (backgroundLight) {
                 secondaryTextColor =
                         NotificationColorUtil.findContrastColor(
                                 mForegroundColor, backgroundColor, true /* findFG */, 4.5f);
                 primaryTextColor =
                         NotificationColorUtil.changeColorLightness(
                                 secondaryTextColor, -LIGHTNESS_TEXT_DIFFERENCE_LIGHT);
-            }else {
+            } else {
                 secondaryTextColor =
                         NotificationColorUtil.findContrastColorAgainstDark(
                                 mForegroundColor, backgroundColor, true /* findFG */, 4.5f);
@@ -175,7 +278,7 @@ public class MediaNotificationProcessor {
                         NotificationColorUtil.changeColorLightness(
                                 secondaryTextColor, -LIGHTNESS_TEXT_DIFFERENCE_DARK);
             }
-        }else {
+        } else {
             primaryTextColor = mForegroundColor;
             secondaryTextColor =
                     NotificationColorUtil.changeColorLightness(
@@ -221,18 +324,18 @@ public class MediaNotificationProcessor {
         // for the background we only take the left side of the image to ensure
         // a smooth transition
         Palette.Builder paletteBuilder = Palette.from(bitmap)
-                .setRegion(0,0,bitmap.getWidth()/2,bitmap.getHeight())
+                .setRegion(0, 0, bitmap.getWidth() / 2, bitmap.getHeight())
                 .clearFilters() // we want all colors, red / white / black ones too!
                 .resizeBitmapArea(RESIZE_BITMAP_AREA);
         Palette palette = paletteBuilder.generate();
         //从调色板返回主要色板。
-        Palette.Swatch dominantSwatch=palette.getDominantSwatch();
-        if (dominantSwatch == null){
+        Palette.Swatch dominantSwatch = palette.getDominantSwatch();
+        if (dominantSwatch == null) {
             mFilteredBackgroundHsl = null;
             return Color.WHITE;
         }
 
-        if (!isWhiteOrBlack(dominantSwatch.getHsl())){
+        if (!isWhiteOrBlack(dominantSwatch.getHsl())) {
             mFilteredBackgroundHsl = dominantSwatch.getHsl();
             return dominantSwatch.getRgb();
 
@@ -246,13 +349,13 @@ public class MediaNotificationProcessor {
                 swatches) {
             if (swatch != dominantSwatch
                     && swatch.getPopulation() > highestNonWhitePopulation
-            &&!isWhiteOrBlack(swatch.getHsl())){
+                    && !isWhiteOrBlack(swatch.getHsl())) {
                 second = swatch;
                 highestNonWhitePopulation = swatch.getPopulation();
             }
         }
 
-        if (second==null){
+        if (second == null) {
             // We're not filtering on white or black
             mFilteredBackgroundHsl = null;
             return dominantSwatch.getRgb();
@@ -276,13 +379,12 @@ public class MediaNotificationProcessor {
     }
 
     private boolean isWhite(float[] hslColor) {
-        return hslColor[2]>=WHITE_MIN_LIGHTNESS;
+        return hslColor[2] >= WHITE_MIN_LIGHTNESS;
     }
 
     private boolean isBlack(float[] hslColor) {
-        return hslColor[2]<=BLACK_MAX_LIGHTNESS;
+        return hslColor[2] <= BLACK_MAX_LIGHTNESS;
     }
-
 
 
     public int getPrimaryTextColor() {
@@ -324,6 +426,11 @@ public class MediaNotificationProcessor {
         }
     }
 
+    private static boolean isColorLight(int backgroundColor) {
+        return calculateLuminance(backgroundColor) > 0.5f;
+    }
+
+
     public interface OnPaletteLoadedListener {
         void onPaletteLoaded(MediaNotificationProcessor mediaNotificationProcessor);
     }
@@ -336,5 +443,7 @@ public class MediaNotificationProcessor {
         errorColors.actionBarColor = -6974059;
         return errorColors;
     }
+
+
 
 }

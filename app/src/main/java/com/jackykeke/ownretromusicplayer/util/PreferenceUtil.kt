@@ -1,6 +1,8 @@
 package com.jackykeke.ownretromusicplayer.util
 
+import android.content.SharedPreferences
 import androidx.core.content.edit
+import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -35,24 +37,31 @@ object PreferenceUtil {
         CategoryInfo(CategoryInfo.Category.Search, false)
     )
 
-    var  libraryCategory:List<CategoryInfo>
-    get() {
-        val gson=Gson()
-        val collectionType = object :TypeToken<List<CategoryInfo>>(){}.type
+    var libraryCategory: List<CategoryInfo>
+        get() {
+            val gson = Gson()
+            val collectionType = object : TypeToken<List<CategoryInfo>>() {}.type
 
-        val data = sharedPreferences.getStringOrDefault(LIBRARY_CATEGORIES,
-            gson.toJson(defaultCategories, collectionType))
-        return try {
-            Gson().fromJson(data,collectionType)
-        }catch (e:JsonSyntaxException){
-            e.printStackTrace()
-            return defaultCategories
+            val data = sharedPreferences.getStringOrDefault(
+                LIBRARY_CATEGORIES,
+                gson.toJson(defaultCategories, collectionType)
+            )
+            return try {
+                Gson().fromJson(data, collectionType)
+            } catch (e: JsonSyntaxException) {
+                e.printStackTrace()
+                return defaultCategories
+            }
         }
-    }
-    set(value) {
-        val collectionType = object : TypeToken<List<CategoryInfo?>?>() {}.type
-        sharedPreferences.edit { putString(LIBRARY_CATEGORIES,Gson().toJson(value,collectionType)) }
-    }
+        set(value) {
+            val collectionType = object : TypeToken<List<CategoryInfo?>?>() {}.type
+            sharedPreferences.edit {
+                putString(
+                    LIBRARY_CATEGORIES,
+                    Gson().toJson(value, collectionType)
+                )
+            }
+        }
 
 
     var artistDetailSongSortOrder
@@ -203,7 +212,7 @@ object PreferenceUtil {
             false
         )
 
-    val crossFadeDuration get() = sharedPreferences.getInt(CROSS_FADE_DURATION,0)
+    val crossFadeDuration get() = sharedPreferences.getInt(CROSS_FADE_DURATION, 0)
 
     val isCrossfadeEnabled get() = crossFadeDuration > 0
 
@@ -245,5 +254,37 @@ object PreferenceUtil {
             putBoolean(COLORED_NOTIFICATION, value)
         }
 
+    val isHeadsetPlugged
+        get() = sharedPreferences.getBoolean(
+            TOGGLE_HEADSET, false
+        )
+
+    fun registerOnSharedPreferenceChangedListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+
+    fun unregisterOnSharedPreferenceChangedListener(
+        changeListener: SharedPreferences.OnSharedPreferenceChangeListener,
+    ) = sharedPreferences.unregisterOnSharedPreferenceChangeListener(changeListener)
+
+    val isAlbumArtOnLockScreen
+        get() = sharedPreferences.getBoolean(
+            ALBUM_ART_ON_LOCK_SCREEN, false
+        )
+
+    val isBlurredAlbumArt
+        get() = sharedPreferences.getBoolean(
+            BLURRED_ALBUM_ART, false
+        )
+
+    val isBluetoothSpeaker
+        get() = sharedPreferences.getBoolean(
+            BLUETOOTH_PLAYBACK, false
+        )
+
+    val pauseHistory: Boolean
+        get() = sharedPreferences.getBoolean(
+            PAUSE_HISTORY,
+            false
+        )
 
 }

@@ -40,12 +40,17 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
     open fun getPermissionsToRequest(): Array<String> = arrayOf()
 
     private val snackBarContainer: View
-    get() = rootView
+        get() = rootView
 
     companion object {
         const val PERMISSION_REQUEST = 100
         const val BLUETOOTH_PERMISSION_REQUEST = 101
     }
+
+    protected fun setPermissionDeniedMessage(message: String) {
+        permissionDeniedMessage = message
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +89,7 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode == KeyEvent.KEYCODE_MENU && event.action == KeyEvent.ACTION_UP){
+        if (event.keyCode == KeyEvent.KEYCODE_MENU && event.action == KeyEvent.ACTION_UP) {
             showOverFlowMenu()
             return true
         }
@@ -96,8 +101,8 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
 
     }
 
-    protected open fun requestPermissions(){
-        ActivityCompat.requestPermissions(this,permissions,PERMISSION_REQUEST)
+    protected open fun requestPermissions() {
+        ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST)
     }
 
 
@@ -108,42 +113,51 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == PERMISSION_REQUEST){
+        if (requestCode == PERMISSION_REQUEST) {
 
-            for (grantResult in grantResults){
-                if ( grantResult !=PackageManager.PERMISSION_GRANTED){
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(this@AbsBaseActivity,
-                                android.Manifest.permission.READ_EXTERNAL_STORAGE)||ActivityCompat.shouldShowRequestPermissionRationale(this@AbsBaseActivity,
-                                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                ){
-                            // User has deny from permission dialog
-                            Snackbar.make(
-                                snackBarContainer,permissionDeniedMessage!!,Snackbar.LENGTH_SHORT)
-                                .setAction(R.string.action_grant){requestPermissions()}
-                                .setActionTextColor(accentColor()).show()
+            for (grantResult in grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            this@AbsBaseActivity,
+                            android.Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                            this@AbsBaseActivity,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    ) {
+                        // User has deny from permission dialog
+                        Snackbar.make(
+                            snackBarContainer, permissionDeniedMessage!!, Snackbar.LENGTH_SHORT
+                        )
+                            .setAction(R.string.action_grant) { requestPermissions() }
+                            .setActionTextColor(accentColor()).show()
 
-                        }else {
-                            // User has deny permission and checked never show permission dialog so you can redirect to Application settings page
-                            Snackbar.make(snackBarContainer,permissionDeniedMessage!!,Snackbar.LENGTH_INDEFINITE)
-                                .setAction(R.string.action_settings){
-                                    val intent = Intent()
-                                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                                    val uri = Uri.fromParts(
-                                        "package",
-                                        this.packageName,
-                                        null
-                                    )
-                                    intent.data=uri
-                                    startActivity(intent)
-                                }.setActionTextColor(accentColor()).show()
+                    } else {
+                        // User has deny permission and checked never show permission dialog so you can redirect to Application settings page
+                        Snackbar.make(
+                            snackBarContainer,
+                            permissionDeniedMessage!!,
+                            Snackbar.LENGTH_INDEFINITE
+                        )
+                            .setAction(R.string.action_settings) {
+                                val intent = Intent()
+                                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                val uri = Uri.fromParts(
+                                    "package",
+                                    this.packageName,
+                                    null
+                                )
+                                intent.data = uri
+                                startActivity(intent)
+                            }.setActionTextColor(accentColor()).show()
 
-                        }
+                    }
                     return
                 }
             }
             hadPermissions = true
             onHasPermissionSChanged(true)
-        }else if (requestCode == BLUETOOTH_PERMISSION_REQUEST){
+        } else if (requestCode == BLUETOOTH_PERMISSION_REQUEST) {
             for (grantResult in grantResults) {
                 if (grantResult != PackageManager.PERMISSION_GRANTED) {
                     if (ActivityCompat.shouldShowRequestPermissionRationale(
@@ -157,9 +171,11 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
                             Snackbar.LENGTH_SHORT
                         )
                             .setAction(R.string.action_grant) {
-                                ActivityCompat.requestPermissions(this,
+                                ActivityCompat.requestPermissions(
+                                    this,
                                     arrayOf(android.Manifest.permission.BLUETOOTH_CONNECT),
-                                    BLUETOOTH_PERMISSION_REQUEST)
+                                    BLUETOOTH_PERMISSION_REQUEST
+                                )
                             }
                             .setActionTextColor(accentColor()).show()
                     }
@@ -169,12 +185,12 @@ abstract class AbsBaseActivity : AbsThemeActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (ev.action == MotionEvent.ACTION_DOWN){
-            val v= currentFocus
-            if (v is EditText){
+        if (ev.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
                 val outRect = Rect()
                 v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(ev.rawX.toInt(),ev.rawY.toInt())){
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     v.clearFocus()
                     getSystemService<InputMethodManager>()?.hideSoftInputFromWindow(
                         v.windowToken,

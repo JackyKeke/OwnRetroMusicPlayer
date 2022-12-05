@@ -1,5 +1,6 @@
 package com.jackykeke.ownretromusicplayer.glide
 
+import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.annotation.GlideExtension
 import com.bumptech.glide.annotation.GlideType
@@ -50,5 +51,10 @@ object RetroGlideExtension {
     fun getSongModel(song: Song):Any{
         return getSongModel(song,PreferenceUtil.isIgnoreMediaStoreArtwork)
     }
+
+    fun <TranscodeType> getDefaultTransition() : GenericTransitionOptions<TranscodeType>{
+        return GenericTransitionOptions<TranscodeType>().transition(DEFAULT_ANIMATION)
+    }
+
 
 }

@@ -38,6 +38,12 @@ class PlaybackManager(val context: Context) {
             playback!!.position()
         } else -1
 
+    val songDurationMillis: Int
+        get() = if (playback != null) {
+            playback!!.duration()
+        } else -1
+
+
     val isPlaying: Boolean
         get() = playback != null && playback!!.isPlaying
 

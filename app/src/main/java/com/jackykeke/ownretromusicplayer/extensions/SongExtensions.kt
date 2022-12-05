@@ -3,6 +3,7 @@ package com.jackykeke.ownretromusicplayer.extensions
 import android.media.MediaDescription
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
+import code.name.monkey.retromusic.db.PlayCountEntity
 import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
 
@@ -29,4 +30,24 @@ fun ArrayList<Song>.toMediaSessionQueue():List<MediaSessionCompat.QueueItem>{
             .build()
         MediaSessionCompat.QueueItem(mediaDescription,song.hashCode().toLong())
     }
+}
+
+fun Song.toPlayCount(): PlayCountEntity {
+    return PlayCountEntity(
+        id = id,
+        title = title,
+        trackNumber = trackNumber,
+        year = year,
+        duration = duration,
+        data = data,
+        dateModified = dateModified,
+        albumId = albumId,
+        albumName = albumName,
+        artistId = artistId,
+        artistName = artistName,
+        composer = composer,
+        albumArtist = albumArtist,
+        timePlayed = System.currentTimeMillis(),
+        playCount = 1
+    )
 }

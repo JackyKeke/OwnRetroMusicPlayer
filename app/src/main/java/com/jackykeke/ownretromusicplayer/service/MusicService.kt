@@ -7,12 +7,22 @@ import android.bluetooth.BluetoothDevice
 import android.content.*
 import android.content.pm.ServiceInfo
 import android.database.ContentObserver
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.media.AudioManager
+import android.media.MediaMetadata
 import android.os.*
+import android.os.Build.VERSION_CODES.M
+import android.provider.MediaStore
+import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.edit
+import androidx.core.content.getSystemService
 import androidx.media.MediaBrowserServiceCompat
 import androidx.preference.PreferenceManager
 import androidx.room.Transaction
@@ -20,8 +30,13 @@ import code.name.monkey.retromusic.appwidgets.AppWidgetCircle
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetCard
 import code.name.monkey.retromusic.appwidgets.AppWidgetClassic
 import code.name.monkey.retromusic.appwidgets.AppWidgetSmall
+import code.name.monkey.retromusic.model.smartplaylist.AbsSmartPlaylist
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.Transition
 import com.jackykeke.appthemehelper.util.VersionUtils
 import com.jackykeke.ownretromusicplayer.*
+import com.jackykeke.ownretromusicplayer.activities.LockScreenActivity
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetBig
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetMD3
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetText
@@ -30,6 +45,9 @@ import com.jackykeke.ownretromusicplayer.auto.AutoMusicProvider
 import com.jackykeke.ownretromusicplayer.extensions.showToast
 import com.jackykeke.ownretromusicplayer.extensions.toMediaSessionQueue
 import com.jackykeke.ownretromusicplayer.extensions.uri
+import com.jackykeke.ownretromusicplayer.glide.BlurTransformation
+import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension.getDefaultTransition
+import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension.getSongModel
 import com.jackykeke.ownretromusicplayer.helper.ShuffleHelper.makeShuffleList
 import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.model.Song.Companion.emptySong
@@ -43,9 +61,15 @@ import com.jackykeke.ownretromusicplayer.service.playback.Playback
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
 import com.jackykeke.ownretromusicplayer.util.PackageValidator
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.crossFadeDuration
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.isAlbumArtOnLockScreen
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.isBluetoothSpeaker
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.isBlurredAlbumArt
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.isClassicNotification
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.isHeadsetPlugged
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.playbackPitch
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.playbackSpeed
+import com.jackykeke.ownretromusicplayer.util.PreferenceUtil.registerOnSharedPreferenceChangedListener
+import com.jackykeke.ownretromusicplayer.volume.AudioVolumeObserver
 import com.jackykeke.ownretromusicplayer.volume.OnAudioVolumeChangedListener
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Default
@@ -54,6 +78,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import org.koin.java.KoinJavaComponent.get
 import java.lang.Runnable
 import kotlin.collections.ArrayList
+import kotlin.random.Random
 
 /**
  *
@@ -142,6 +167,18 @@ class MusicService : MediaBrowserServiceCompat(),
 
     }
 
+    private val bluetoothReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (action != null) {
+                if (BluetoothDevice.ACTION_ACL_CONNECTED == action && isBluetoothSpeaker) {
+                    if (getSystemService<AudioManager>()!!.isBluetoothA2dpOn) {
+                        play()
+                    }
+                }
+            }
+        }
+    }
 
     private val bluetoothConnectedIntentFilter = IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED)
     private var bluetoothConnectedRegistered = false
@@ -234,7 +271,7 @@ class MusicService : MediaBrowserServiceCompat(),
 
     private var queuesRestored = false
 
-    private fun handleAndSendChangeInternal(what: String) {
+    fun handleAndSendChangeInternal(what: String) {
         handleChangeInternal(what)
         sendChangeInternal(what)
     }
@@ -378,18 +415,58 @@ class MusicService : MediaBrowserServiceCompat(),
     val currentSong: Song
         get() = getSongAt(getPosition())
 
+    val audioSessionId: Int
+        get() = playbackManager.audioSessionId
+
+    fun cycleRepeatMode() {
+        repeatMode = when (repeatMode) {
+            REPEAT_MODE_NONE -> REPEAT_MODE_ALL
+            REPEAT_MODE_ALL -> REPEAT_MODE_THIS
+            else -> REPEAT_MODE_NONE
+        }
+    }
+
     private fun getPosition(): Int {
         return position
     }
 
     private fun setPosition(position: Int) {
-        openTrackAndPrepareNextAt(position) {
-
+        openTrackAndPrepareNextAt(position) { success ->
+            if (success) {
+                notifyChange(PLAY_STATE_CHANGED)
+            }
         }
     }
 
     private var throttledSeekHandler: ThrottledSeekHandler? = null
 
+    //  上一首
+    private fun getPreviousPosition(force: Boolean): Int {
+        var newPosition = getPosition() - 1
+        when (repeatMode) {
+            REPEAT_MODE_ALL -> if (newPosition < 0) {
+                newPosition = playingQueue.size - 1
+            }
+
+            REPEAT_MODE_THIS -> if (force) {
+                if (newPosition < 0) {
+                    newPosition = playingQueue.size - 1
+                }
+            } else {
+                newPosition = getPosition()
+            }
+
+            REPEAT_MODE_NONE -> if (newPosition < 0) {
+                newPosition = 0
+            }
+
+            else -> if (newPosition < 0) {
+                newPosition = 0
+            }
+        }
+
+        return newPosition
+    }
 
     @Synchronized
     private fun openTrackAndPrepareNextAt(position: Int, completion: (success: Boolean) -> Unit) {
@@ -445,6 +522,10 @@ class MusicService : MediaBrowserServiceCompat(),
         playbackManager.switchToLocalPlayback(this::restorePlaybackState)
     }
 
+    fun switchToRemotePlayback(castPlayer: CastPlayer) {
+        playbackManager.switchToRemotePlayback(castPlayer, this::restorePlaybackState)
+    }
+
     private fun restorePlaybackState(wasPlaying: Boolean, progress: Int) {
 
         playbackManager.setCallbacks(this)
@@ -463,6 +544,32 @@ class MusicService : MediaBrowserServiceCompat(),
 
     }
 
+    private fun playFromPlaylist(intent: Intent) {
+        val playlist: AbsSmartPlaylist? = intent.getParcelableExtra(INTENT_EXTRA_PLAYLIST)
+        val shuffleMode = intent.getIntExtra(INTENT_EXTRA_SHUFFLE_MODE, getShuffleMode())
+        if (playlist != null) {
+            val playlistSongs = playlist.songs()
+            if (playlistSongs.isNotEmpty()) {
+                if (shuffleMode == SHUFFLE_MODE_SHUFFLE) {
+                    val startPosition = java.util.Random().nextInt(playlistSongs.size)
+                    openQueue(playlistSongs, startPosition, true)
+                    setShuffleMode(shuffleMode)
+                } else {
+                    openQueue(playlistSongs, 0, true)
+                }
+            } else {
+                runOnUiThread {
+                    showToast(R.string.playlist_is_empty, Toast.LENGTH_LONG)
+                }
+            }
+        } else {
+            runOnUiThread {
+                showToast(R.string.playlist_is_empty, Toast.LENGTH_LONG)
+            }
+        }
+    }
+
+
     private fun pause(force: Boolean = false) {
         playbackManager.pause(force) {
             notifyChange(PLAY_STATE_CHANGED)
@@ -480,6 +587,12 @@ class MusicService : MediaBrowserServiceCompat(),
         }
 
     }
+
+    val songDurationMillis: Int
+        get() = playbackManager.songDurationMillis
+
+    val songProgressMillis: Int
+        get() = playbackManager.songProgressMillis
 
     private fun getSongAt(position: Int): Song {
         return if ((position >= 0) && (position < playingQueue.size)) {
@@ -553,11 +666,139 @@ class MusicService : MediaBrowserServiceCompat(),
         }
 
 
+    private var wakeLock: PowerManager.WakeLock? = null
+
     override fun onCreate() {
         super.onCreate()
+        val powerManager = getSystemService<PowerManager>()
+        powerManager?.let {
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, javaClass.name)
+        }
+//        是否引用计数
+        wakeLock?.setReferenceCounted(false)
+        musicPlayerHandlerThread = HandlerThread("PlaybackHandler")
+        musicPlayerHandlerThread?.start()
+        playerHandler = Handler(musicPlayerHandlerThread!!.looper)
+
+        playbackManager = PlaybackManager(this)
+        playbackManager.setCallbacks(this)
+        setupMediaSession()
+
 
         uiThreadHandler = Handler(Looper.getMainLooper())
 
+        registerReceiver(widgetIntentReceiver, IntentFilter(APP_WIDGET_UPDATE))
+        registerReceiver(updateFavoriteReceiver, IntentFilter(FAVORITE_STATE_CHANGED))
+        registerReceiver(lockScreenReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
+
+        sessionToken = mediaSession?.sessionToken
+        notificationManager = getSystemService()
+        initNotification()
+        mediaStoreObserver = MediaStoreObserver(this, playerHandler!!)
+        throttledSeekHandler = ThrottledSeekHandler(this, Handler(mainLooper))
+        contentResolver.registerContentObserver(
+            EXTERNAL_CONTENT_URI,
+            true,
+            mediaStoreObserver
+        )
+        contentResolver.registerContentObserver(
+            MediaStore.Audio.Media.INTERNAL_CONTENT_URI,
+            true,
+            mediaStoreObserver
+        )
+
+        val audioVolumeObserver = AudioVolumeObserver(this)
+        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
+        registerOnSharedPreferenceChangedListener(this)
+        restoreState()
+        sendBroadcast(Intent("$RETRO_MUSIC_PACKAGE_NAME.RETRO_MUSIC_SERVICE_CREATED"))
+        registerHeadsetEvents()
+        registerBluetoothConnected()
+        mPackageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
+        mMusicProvider.setMusicService(this)
+        storage = PersistentStorage.getInstance(this)
+
+    }
+
+    fun restoreState(completion: () -> Unit = {}) {
+        shuffleMode = PreferenceManager.getDefaultSharedPreferences(this).getInt(
+            SAVED_SHUFFLE_MODE, 0
+        )
+
+        repeatMode = PreferenceManager.getDefaultSharedPreferences(this).getInt(
+            SAVED_REPEAT_MODE, 0
+        )
+
+        handleAndSendChangeInternal(SHUFFLE_MODE_CHANGED)
+        handleAndSendChangeInternal(REPEAT_MODE_CHANGED)
+        serviceScope.launch {
+            restoreQueuesAndPositionIfNecessary()
+            completion()
+        }
+    }
+
+    private suspend fun restoreQueuesAndPositionIfNecessary() {
+        if (!queuesRestored && playingQueue.isEmpty()) {
+            withContext(IO) {
+                val restoredQueue =
+                    MusicPlaybackQueueStore.getInstance(this@MusicService).savedPlayingQueue
+                val restoredOriginalQueue =
+                    MusicPlaybackQueueStore.getInstance(this@MusicService).savedOriginalPlayingQueue
+                val restoredPosition =
+                    PreferenceManager.getDefaultSharedPreferences(this@MusicService).getInt(
+                        SAVED_POSITION, -1
+                    )
+
+                val restoredPositionInTrack =
+                    PreferenceManager.getDefaultSharedPreferences(this@MusicService).getInt(
+                        SAVED_POSITION_IN_TRACK, -1
+                    )
+
+
+                if (restoredQueue.size > 0 && restoredQueue.size == restoredOriginalQueue.size && restoredPosition != -1) {
+                    originalPlayingQueue = ArrayList(restoredOriginalQueue)
+                    playingQueue = ArrayList(restoredQueue)
+                    position = restoredPosition
+
+                    withContext(Main) {
+                        openCurrent {
+                            prepareNext()
+                            if (restoredPositionInTrack > 0) {
+                                seek(restoredPositionInTrack)
+                            }
+
+                            notHandledMetaChangedForCurrentTrack = true
+                            sendChangeInternal(META_CHANGED)
+                        }
+
+                        if (receivedHeadsetConnected) {
+                            play()
+                            receivedHeadsetConnected = false
+                        }
+                    }
+                    sendChangeInternal(QUEUE_CHANGED)
+                    mediaSession?.setQueueTitle(getString(R.string.now_playing_queue))
+                    mediaSession?.setQueue(playingQueue.toMediaSessionQueue())
+                }
+
+            }
+
+            queuesRestored = true
+
+        }
+    }
+
+    fun runOnUIThread(runnable: Runnable?) {
+        uiThreadHandler?.post(runnable!!)
+    }
+
+
+    fun toggleShuffle() {
+        if (getShuffleMode() == SHUFFLE_MODE_NONE) {
+            setShuffleMode(SHUFFLE_MODE_SHUFFLE)
+        } else {
+            setShuffleMode(SHUFFLE_MODE_NONE)
+        }
     }
 
     override fun onGetRoot(
@@ -634,6 +875,37 @@ class MusicService : MediaBrowserServiceCompat(),
         }
     }
 
+    private var receivedHeadsetConnected = false
+
+    private val headsetReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+
+            val action = intent.action
+            if (action != null) {
+                if (Intent.ACTION_HEADSET_PLUG == action) {
+                    when (intent.getIntExtra("state", -1)) {
+                        0 -> pause()
+                        // Check whether the current song is empty which means the playing queue hasn't restored yet
+//                        检查当前歌曲是否为空，即播放队列尚未恢复
+                        1 -> if (currentSong != emptySong) {
+                            play()
+                        } else {
+                            receivedHeadsetConnected = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun registerHeadsetEvents() {
+        if (!headsetReceiverRegistered && isHeadsetPlugged) {
+            registerReceiver(headsetReceiver, headsetReceiverIntentFilter)
+            headsetReceiverRegistered = true
+        }
+
+    }
+
     private fun updateNotification() {
         if (playingNotification != null && currentSong.id != -1L) {
             stopForegroundAndNotification()
@@ -641,12 +913,13 @@ class MusicService : MediaBrowserServiceCompat(),
         }
     }
 
+
     private fun initNotification() {
 
         playingNotification = if (VersionUtils.hasNougat() && !isClassicNotification) {
-            PlayingNotificationImpl24.from(this,notificationManager!!,mediaSession!!)
-        }else{
-            PlayingNotificationClassic.from()
+            PlayingNotificationImpl24.from(this, notificationManager!!, mediaSession!!)
+        } else {
+            PlayingNotificationClassic.from(this, notificationManager!!)
         }
     }
 
@@ -659,10 +932,84 @@ class MusicService : MediaBrowserServiceCompat(),
             return
         }
 
+        val metadata = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artistName)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, song.albumArtist)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.albumName)
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
+            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration)
+            .putLong(
+                MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER,
+                (getPosition() + 1).toLong()
+            )
+            .putLong(MediaMetadataCompat.METADATA_KEY_YEAR, song.year.toLong())
+            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, null)
+            .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, playingQueue.size.toLong())
+
+        if (isAlbumArtOnLockScreen) {
+            val request = GlideApp.with(this)
+                .asBitmap()
+                .songCoverOptions(song)
+                .load(getSongModel(song))
+                .transition(getDefaultTransition())
+
+            if (isBlurredAlbumArt) {
+
+                request.transform(BlurTransformation.Builder(this@MusicService).build())
+            }
+            request.into(object :
+                CustomTarget<Bitmap?>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    super.onLoadFailed(errorDrawable)
+                    mediaSession?.setMetadata(metadata.build())
+                    onCompletion()
+                }
+
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap?>?,
+                ) {
+                    metadata.putBitmap(
+                        MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+                        resource
+                    )
+                    mediaSession?.setMetadata(metadata.build())
+                    onCompletion()
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+
+
+        } else {
+            mediaSession?.setMetadata(metadata.build())
+            onCompletion()
+        }
     }
 
     override fun onTrackWentToNext() {
-        TODO("Not yet implemented")
+
+        if (pendingQuit || repeatMode == REPEAT_MODE_NONE && isLastTrack) {
+            playbackManager.setNextDataSource(null)
+            pause(false)
+            seek(0)
+            if (pendingQuit) {
+                pendingQuit = false
+                quit()
+            }
+        } else {
+            position = nextPosition
+            prepareNextImpl()
+            notifyChange(META_CHANGED)
+        }
+    }
+
+    private fun quit() {
+        pause()
+        stopForeground(true)
+        isForeground = false
+        notificationManager?.cancel(PlayingNotification.NOTIFICATION_ID)
+        stopSelf()
     }
 
     override fun onTrackEnded() {
@@ -674,15 +1021,20 @@ class MusicService : MediaBrowserServiceCompat(),
     }
 
     override fun onPlayStateChanged() {
-        TODO("Not yet implemented")
+        notifyChange(PLAY_STATE_CHANGED)
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        if (!isPlaying) {
+            stopSelf()
+        }
+        return true
     }
 
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         TODO("Not yet implemented")
     }
 
-    val songProgressMillis: Int
-        get() = playbackManager.songProgressMillis
 
     fun updateMediaSessionPlaybackState() {
         val stateBuilder = PlaybackStateCompat.Builder()
@@ -774,7 +1126,7 @@ class MusicService : MediaBrowserServiceCompat(),
 
     }
 
-    private fun playSongAt(position: Int) {
+    fun playSongAt(position: Int) {
         serviceScope.launch(if (playbackManager.isLocalPlayback) Default else Main) {
             openTrackAndPrepareNextAt(position) { success ->
                 if (success) {
@@ -789,6 +1141,23 @@ class MusicService : MediaBrowserServiceCompat(),
         }
     }
 
+    private fun registerBluetoothConnected() {
+        Log.i(TAG, "registerBluetoothConnected: ")
+        if (!bluetoothConnectedRegistered) {
+            registerReceiver(bluetoothReceiver, bluetoothConnectedIntentFilter)
+            bluetoothConnectedRegistered = true
+        }
+    }
+
+    private fun releaseResources() {
+
+        playerHandler?.removeCallbacksAndMessages(null)
+        musicPlayerHandlerThread?.quitSafely()
+        playbackManager.release()
+        mediaSession?.release()
+    }
+
+
     private fun play() {
         playbackManager.play {
             playSongAt(getPosition())
@@ -800,6 +1169,14 @@ class MusicService : MediaBrowserServiceCompat(),
         }
         notifyChange(PLAY_STATE_CHANGED)
 
+    }
+
+    fun getQueueDurationMillis(position: Int): Long {
+        var duration: Long = 0
+        for (i in position + 1 until playingQueue.size) {
+            duration += playingQueue[i].duration
+        }
+        return duration
     }
 
 

@@ -23,8 +23,9 @@ interface IMusicServiceEventListener {
 
     fun onRepeatModeChanged()
 
-    fun onShuttleModeChanged()
 
     fun onMediaStoreChanged()
+
+    fun onShuffleModeChanged()
     
 }
