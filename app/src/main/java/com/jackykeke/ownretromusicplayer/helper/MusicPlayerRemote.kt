@@ -224,6 +224,35 @@ object MusicPlayerRemote : KoinComponent {
         }
     }
 
+    fun pauseSong() {
+        musicService?.pause()
+    }
+
+    /**
+     * Async
+     */
+    fun playNextSong() {
+        musicService?.playNextSong(true)
+    }
+
+    /**
+     * Async
+     */
+    fun playPreviousSong() {
+        musicService?.playPreviousSong(true)
+    }
+
+    /**
+     * Async
+     */
+    fun back() {
+        musicService?.back(true)
+    }
+
+    fun resumePlaying() {
+        musicService?.play()
+    }
+
 
     class ServiceBinder internal constructor(val mCallback: ServiceConnection?) :
         ServiceConnection {

@@ -10,7 +10,9 @@ import com.jackykeke.ownretromusicplayer.activities.base.AbsMusicServiceActivity
 import com.jackykeke.ownretromusicplayer.databinding.ActivityLockScreenBinding
 import com.jackykeke.ownretromusicplayer.extensions.hideStatusBar
 import com.jackykeke.ownretromusicplayer.extensions.setTaskDescriptionColorAuto
+import com.jackykeke.ownretromusicplayer.extensions.whichFragment
 import com.jackykeke.ownretromusicplayer.fragments.base.AbsMusicServiceFragment
+import com.jackykeke.ownretromusicplayer.fragments.lockscreen.LockScreenControlsFragment
 import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
 import com.jackykeke.ownretromusicplayer.util.color.MediaNotificationProcessor
@@ -18,6 +20,7 @@ import com.r0adkll.slidr.Slidr
 import com.r0adkll.slidr.model.SlidrConfig
 import com.r0adkll.slidr.model.SlidrListener
 import com.r0adkll.slidr.model.SlidrPosition
+import java.util.concurrent.locks.Lock
 
 class LockScreenActivity : AbsMusicServiceActivity() {
 
@@ -53,7 +56,8 @@ class LockScreenActivity : AbsMusicServiceActivity() {
 
         Slidr.attach(this,config)
 
-        fragment =w
+        fragment = whichFragment<LockScreenControlsFragment>(R.id.playback_controls_fragment)
+
 
     }
 

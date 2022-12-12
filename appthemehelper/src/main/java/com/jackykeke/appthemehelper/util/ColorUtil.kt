@@ -4,6 +4,8 @@ import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.core.graphics.ColorUtils
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -115,5 +117,11 @@ object ColorUtil {
         return Color.argb(a.toInt(), r.toInt(), g.toInt(), b.toInt())
     }
 
+    @ColorInt
+    fun withAlpha(@ColorInt baseColor: Int, @FloatRange(from = 0.0, to = 1.0) alpha: Float): Int {
+        val a = min(255, max(0, (alpha * 255).toInt())) shl 24
+        val rgb = 0x00ffffff and baseColor
+        return a + rgb
+    }
 
 }

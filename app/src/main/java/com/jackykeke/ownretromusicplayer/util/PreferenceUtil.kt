@@ -24,7 +24,7 @@ import com.jackykeke.ownretromusicplayer.util.theme.ThemeMode
 object PreferenceUtil {
 
 
-    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
+     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
 
     val defaultCategories = listOf(
         CategoryInfo(CategoryInfo.Category.Home, true),
@@ -286,5 +286,12 @@ object PreferenceUtil {
             PAUSE_HISTORY,
             false
         )
+
+    val isVolumeVisibilityMode
+        get() = sharedPreferences.getBoolean(
+            TOGGLE_VOLUME, false
+        )
+
+    val isPauseOnZeroVolume get() = sharedPreferences.getBoolean(PAUSE_ON_ZERO_VOLUME, false)
 
 }

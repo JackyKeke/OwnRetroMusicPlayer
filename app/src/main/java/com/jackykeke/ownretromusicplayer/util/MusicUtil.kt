@@ -11,6 +11,7 @@ import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.repository.Repository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.util.*
 
 /**
  *
@@ -19,13 +20,12 @@ import org.koin.core.component.get
  * @descrption 描述 ：
  * @copy 版权当然属于 keyuliang
  */
-object MusicUtil :KoinComponent {
-
+object MusicUtil : KoinComponent {
 
 
     private val repository = get<Repository>()
 
-    fun isVariousArtists(artistName:String?):Boolean {
+    fun isVariousArtists(artistName: String?): Boolean {
 
         if (artistName.isNullOrEmpty()) return false
 
@@ -34,31 +34,30 @@ object MusicUtil :KoinComponent {
         return false
     }
 
-    fun isArtistNameUnknown(artistName:String?):Boolean {
+    fun isArtistNameUnknown(artistName: String?): Boolean {
         if (artistName.isNullOrEmpty()) return false
 
         if (artistName == Artist.UNKNOWN_ARTIST_DISPLAY_NAME) return true
 
-        val tempName = artistName.trim { it <=' ' }.lowercase()
-        return  tempName == "unknown" || tempName == "<unknown>"
+        val tempName = artistName.trim { it <= ' ' }.lowercase()
+        return tempName == "unknown" || tempName == "<unknown>"
     }
 
 
-    fun getSongCountString(context: Context,songCount:Int):String{
-        val songString = if(songCount == 1) context.resources
+    fun getSongCountString(context: Context, songCount: Int): String {
+        val songString = if (songCount == 1) context.resources
             .getString(R.string.song) else context.resources.getString(R.string.songs)
         return "$songCount $songString"
     }
 
-    fun buildInfoString(string1: String?,string2: String?) :String{
+    fun buildInfoString(string1: String?, string2: String?): String {
 
-        if (string1.isNullOrEmpty()){
-            return  if (string2.isNullOrEmpty()) "" else string2
+        if (string1.isNullOrEmpty()) {
+            return if (string2.isNullOrEmpty()) "" else string2
         }
         return if (string2.isNullOrEmpty()) if (string1.isNullOrEmpty()) "" else string1 else "$string1  •  $string2"
 
     }
-
 
 
     @JvmStatic
@@ -69,11 +68,30 @@ object MusicUtil :KoinComponent {
 
     suspend fun isFavorite(song: Song) = repository.isSongFavorite(song.id)
 
-    fun getSongFileUri(songId:Long) :Uri{
-        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-        songId)
+    fun getSongFileUri(songId: Long): Uri {
+        return ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            songId
+        )
     }
 
+    fun getReadableDurationString(songDurationMills: Long): String {
+        var minutes = songDurationMills / 1000 / 60
+        val seconds = songDurationMills / 1000 % 60
+        return if (minutes<60){
+            String.format(Locale.getDefault(),"%02d:%02d",minutes,seconds)
+        }else{
+            val hours = minutes / 60
+            minutes %= 60
+            String.format(
+                Locale.getDefault(),
+                "%02d:%02d:%02d",
+                hours,
+                minutes,
+                seconds
+            )
+        }
+    }
 
 
 }

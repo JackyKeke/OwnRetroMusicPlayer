@@ -11,4 +11,13 @@
     </style>
 
 
+    <style name="TextViewHeadline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">@font/sans</item>
+    </style>
+
+    <style name="TextViewBody1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/sans</item>
+    </style>
+
+
 </resources>

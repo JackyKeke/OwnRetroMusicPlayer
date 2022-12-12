@@ -55,5 +55,10 @@
 
     <style name="Theme.RetroMusic.Notification.Title" parent="@android:style/TextAppearance.StatusBar.EventContent.Title" />
 
+    <style name="Widget.Retro.Slider" parent="Widget.Material3.Slider">
+        <item name="labelBehavior">gone</item>
+        <item name="thumbRadius">6dp</item>
+        <item name="haloRadius">18dp</item>
+    </style>
 
 </resources>

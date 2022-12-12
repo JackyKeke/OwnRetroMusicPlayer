@@ -570,7 +570,7 @@ class MusicService : MediaBrowserServiceCompat(),
     }
 
 
-    private fun pause(force: Boolean = false) {
+    fun pause(force: Boolean = false) {
         playbackManager.pause(force) {
             notifyChange(PLAY_STATE_CHANGED)
         }
@@ -1158,7 +1158,7 @@ class MusicService : MediaBrowserServiceCompat(),
     }
 
 
-    private fun play() {
+    fun play() {
         playbackManager.play {
             playSongAt(getPosition())
         }
@@ -1171,6 +1171,14 @@ class MusicService : MediaBrowserServiceCompat(),
 
     }
 
+    fun back(force: Boolean) {
+        if (songProgressMillis > 2000) {
+            seek(0)
+        } else {
+            playPreviousSong(force)
+        }
+    }
+
     fun getQueueDurationMillis(position: Int): Long {
         var duration: Long = 0
         for (i in position + 1 until playingQueue.size) {
@@ -1179,6 +1187,13 @@ class MusicService : MediaBrowserServiceCompat(),
         return duration
     }
 
+    fun playNextSong(force: Boolean){
+        playSongAt(getNextPosition(force))
+    }
+
+    fun playPreviousSong(force: Boolean) {
+        playSongAt(getPreviousPosition(force))
+    }
 
     companion object {
         val TAG: String = MusicService::class.java.simpleName
