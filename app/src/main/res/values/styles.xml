@@ -61,4 +61,41 @@
         <item name="haloRadius">18dp</item>
     </style>
 
+    <style name="TextViewNormal" parent="">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextViewNormalCompress" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextViewHeadline4.Compress" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <style name="TextViewHeadline4" parent="TextAppearance.MaterialComponents.Headline4" />
+
+    <style name="TextViewHeadline5" parent="TextAppearance.MaterialComponents.Headline5" />
+
+    <style name="TextViewCaption" parent="TextAppearance.MaterialComponents.Caption" />
+
+    <style name="TextViewHeadline6" parent="TextAppearance.MaterialComponents.Headline6" />
+
+    <style name="TextViewHeadline3" parent="TextAppearance.MaterialComponents.Headline3" />
+
+    <style name="TextViewHeadline2" parent="TextAppearance.MaterialComponents.Headline2" />
+
+    <style name="TextViewSubtitle1" parent="TextAppearance.MaterialComponents.Subtitle1" />
+
+    <style name="TextViewSubtitle2" parent="TextAppearance.MaterialComponents.Subtitle2" />
+
+    <style name="TextViewBody1" parent="TextAppearance.MaterialComponents.Body1" />
+
+    <style name="TextViewButton" parent="TextAppearance.MaterialComponents.Button" />
+
+    <style name="TextViewBody2" parent="TextAppearance.MaterialComponents.Body2" />
+
+    <style name="TextViewOverline" parent="TextAppearance.MaterialComponents.Overline" />
+
+
 </resources>

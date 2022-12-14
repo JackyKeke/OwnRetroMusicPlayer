@@ -7,6 +7,6 @@ package com.jackykeke.ownretromusicplayer.activities.base
  * @descrption 描述 ：
  * @copy 版权当然属于 keyuliang
  */
-abstract class AbsCastActivity :AbsSlidingMusicPanelActivity{
+abstract class AbsCastActivity :AbsSlidingMusicPanelActivity(){
 
 }

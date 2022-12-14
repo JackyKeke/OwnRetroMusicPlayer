@@ -1,10 +1,18 @@
 package com.jackykeke.ownretromusicplayer.glide
 
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.annotation.GlideExtension
+import com.bumptech.glide.annotation.GlideOption
 import com.bumptech.glide.annotation.GlideType
+import com.bumptech.glide.load.Key
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.BaseRequestOptions
+import com.bumptech.glide.signature.MediaStoreSignature
+import com.jackykeke.ownretromusicplayer.App.Companion.getContext
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.glide.audiocover.AudioFileCover
 import com.jackykeke.ownretromusicplayer.glide.palette.BitmapPaletteWrapper
@@ -56,5 +64,22 @@ object RetroGlideExtension {
         return GenericTransitionOptions<TranscodeType>().transition(DEFAULT_ANIMATION)
     }
 
+    @JvmStatic
+    @GlideOption
+    fun songCoverOptions(baseRequestOptions: BaseRequestOptions<*>,
+    song: Song) : BaseRequestOptions<*>{
+        return baseRequestOptions.diskCacheStrategy(DEFAULT_DISK_CACHE_STRATEGY)
+            .error(getDrawable(DEFAULT_SONG_IMAGE))
+            .placeholder(getDrawable(DEFAULT_SONG_IMAGE))
+            .signature(createSignature(song))
+    }
+
+    private fun createSignature(song: Song): Key {
+        return MediaStoreSignature("", song.dateModified, 0)
+    }
+
+    fun getDrawable(@DrawableRes id: Int): Drawable? {
+        return ContextCompat.getDrawable(getContext(), id)
+    }
 
 }

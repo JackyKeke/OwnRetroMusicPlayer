@@ -1,8 +1,10 @@
 package com.jackykeke.ownretromusicplayer.activities
 
+import android.app.KeyguardManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.core.content.getSystemService
 import com.bumptech.glide.Glide
 import com.jackykeke.appthemehelper.util.VersionUtils
 import com.jackykeke.ownretromusicplayer.R
@@ -13,7 +15,9 @@ import com.jackykeke.ownretromusicplayer.extensions.setTaskDescriptionColorAuto
 import com.jackykeke.ownretromusicplayer.extensions.whichFragment
 import com.jackykeke.ownretromusicplayer.fragments.base.AbsMusicServiceFragment
 import com.jackykeke.ownretromusicplayer.fragments.lockscreen.LockScreenControlsFragment
+import com.jackykeke.ownretromusicplayer.glide.GlideApp
 import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension
+import com.jackykeke.ownretromusicplayer.glide.RetroMusicColoredTarget
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
 import com.jackykeke.ownretromusicplayer.util.color.MediaNotificationProcessor
 import com.r0adkll.slidr.Slidr
@@ -49,7 +53,13 @@ class LockScreenActivity : AbsMusicServiceActivity() {
             }
 
             override fun onSlideClosed(): Boolean {
-                TODO("Not yet implemented")
+                if (VersionUtils.hasOreo()) {
+                    val keyguardManager =
+                        getSystemService<KeyguardManager>()
+                    keyguardManager?.requestDismissKeyguard(this@LockScreenActivity, null)
+                }
+                finish()
+                return true
             }
 
         }).position(SlidrPosition.BOTTOM).build()
@@ -58,6 +68,11 @@ class LockScreenActivity : AbsMusicServiceActivity() {
 
         fragment = whichFragment<LockScreenControlsFragment>(R.id.playback_controls_fragment)
 
+        binding.slide.apply {
+            translationY = 100f
+            alpha = 0f
+            animate().translationY(0f).alpha(1f).setDuration(1500).start()
+        }
 
     }
 

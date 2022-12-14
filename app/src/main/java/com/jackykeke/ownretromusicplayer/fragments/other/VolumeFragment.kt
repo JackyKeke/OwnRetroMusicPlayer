@@ -67,7 +67,7 @@ class VolumeFragment : Fragment(), Slider.OnChangeListener, OnAudioVolumeChanged
 
     }
 
-    private fun setTintable(color: Int) {
+    fun setTintable(color: Int) {
         binding.volumeSeekBar.applyColor(color)
     }
     private fun setPauseWhenZeroVolume(pauseWhenZeroVolume: Boolean){

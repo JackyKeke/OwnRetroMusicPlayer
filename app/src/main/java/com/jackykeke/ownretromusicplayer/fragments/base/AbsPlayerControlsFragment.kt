@@ -1,6 +1,7 @@
 package com.jackykeke.ownretromusicplayer.fragments.base
 
 import android.animation.ObjectAnimator
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -20,6 +21,7 @@ import com.jackykeke.ownretromusicplayer.fragments.MusicSeekSkipTouchListener
 import com.jackykeke.ownretromusicplayer.fragments.other.VolumeFragment
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
 import com.jackykeke.ownretromusicplayer.helper.MusicProgressViewUpdateHelper
+import com.jackykeke.ownretromusicplayer.service.MusicService
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import com.jackykeke.ownretromusicplayer.util.color.MediaNotificationProcessor
@@ -95,7 +97,32 @@ abstract class AbsPlayerControlsFragment(@LayoutRes layout: Int) :
                 onProgressChange(value.toInt(), fromUser)
             }
         })
+
+        progressSlider?.addOnSliderTouchListener(object :Slider.OnSliderTouchListener{
+            override fun onStartTrackingTouch(slider: Slider) {
+                 onStartTrackingTouch()
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                 onStopTrackingTouch(slider)
+            }
+
+        })
+        seekBar?.setOnSeekBarChangeListener(object :SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                 onProgressChange(progress,fromUser)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                 onStartTrackingTouch()
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                 onStopTrackingTouch(seekBar)
+            }
+        })
     }
+
 
     private fun onProgressChange(value: Int, fromUser: Boolean) {
         if (fromUser) {
@@ -182,12 +209,58 @@ abstract class AbsPlayerControlsFragment(@LayoutRes layout: Int) :
     }
 
     private fun setUpShuffleButton() {
+        shuffleButton.setOnClickListener { MusicPlayerRemote.toggleShuffleMode() }
 
     }
 
     private fun setUpRepeatButton() {
+        repeatButton.setOnClickListener { MusicPlayerRemote.cycleRepeatMode() }
 
     }
+
+
+    fun updatePrevNextColor(){
+        nextButton?.setColorFilter(lastPlaybackControlsColor, PorterDuff.Mode.SRC_IN)
+        previousButton?.setColorFilter(lastPlaybackControlsColor, PorterDuff.Mode.SRC_IN)
+    }
+
+
+    fun updateShuffleState(){
+        shuffleButton.setColorFilter(
+            when(MusicPlayerRemote.shuffleMode){
+                MusicService.SHUFFLE_MODE_SHUFFLE -> lastPlaybackControlsColor
+                else -> lastDisabledPlaybackControlsColor
+            },PorterDuff.Mode.SRC_IN
+        )
+    }
+
+    fun updateRepeatState(){
+        when(MusicPlayerRemote.repeatMode){
+            MusicService.REPEAT_MODE_NONE ->{
+                repeatButton.setImageResource(R.drawable.ic_repeat)
+                repeatButton.setColorFilter(
+                    lastDisabledPlaybackControlsColor,
+                    PorterDuff.Mode.SRC_IN
+                )
+            }
+
+            MusicService.REPEAT_MODE_ALL ->{
+                repeatButton.setImageResource(R.drawable.ic_repeat)
+                repeatButton.setColorFilter(
+                    lastPlaybackControlsColor,
+                    PorterDuff.Mode.SRC_IN
+                )
+            }
+            MusicService.REPEAT_MODE_THIS -> {
+                repeatButton.setImageResource(R.drawable.ic_repeat_one)
+                repeatButton.setColorFilter(
+                    lastPlaybackControlsColor,
+                    PorterDuff.Mode.SRC_IN
+                )
+            }
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()

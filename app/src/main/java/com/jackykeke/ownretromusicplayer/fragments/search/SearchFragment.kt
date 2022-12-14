@@ -2,6 +2,7 @@ package com.jackykeke.ownretromusicplayer.fragments.search
 
 import com.google.android.material.chip.ChipGroup
 import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.fragments.base.AbsMainActivityFragment
 
 /**
  *
@@ -12,6 +13,9 @@ import com.jackykeke.ownretromusicplayer.R
  */
 class SearchFragment  : AbsMainActivityFragment(R.layout.fragment_search),
     ChipGroup.OnCheckedStateChangeListener{
+
+
+
 }
 
 enum class Filter {

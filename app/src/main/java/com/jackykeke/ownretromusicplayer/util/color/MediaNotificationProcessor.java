@@ -15,6 +15,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 
 import androidx.palette.graphics.Palette;
 
@@ -444,6 +445,21 @@ public class MediaNotificationProcessor {
         return errorColors;
     }
 
+
+    public void  getPaletteAsync(final  OnPaletteLoadedListener onPaletteLoadedListener,Drawable drawable){
+        this.drawable= drawable;
+        final Handler handler=new Handler();
+        new Thread(() -> {
+            getMediaPalette();
+            handler.post(() -> onPaletteLoadedListener.onPaletteLoaded(MediaNotificationProcessor.this));
+        }).start();
+    }
+
+
+    public void getPaletteAsync(OnPaletteLoadedListener onPaletteLoadedListener,Bitmap bitmap){
+        this.drawable = new BitmapDrawable(context.getResources(),bitmap);
+        getPaletteAsync(onPaletteLoadedListener,this.drawable);
+    }
 
 
 }

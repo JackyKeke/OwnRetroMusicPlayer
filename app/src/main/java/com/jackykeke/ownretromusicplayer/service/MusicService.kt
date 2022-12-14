@@ -46,6 +46,7 @@ import com.jackykeke.ownretromusicplayer.extensions.showToast
 import com.jackykeke.ownretromusicplayer.extensions.toMediaSessionQueue
 import com.jackykeke.ownretromusicplayer.extensions.uri
 import com.jackykeke.ownretromusicplayer.glide.BlurTransformation
+import com.jackykeke.ownretromusicplayer.glide.GlideApp
 import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension.getDefaultTransition
 import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension.getSongModel
 import com.jackykeke.ownretromusicplayer.helper.ShuffleHelper.makeShuffleList

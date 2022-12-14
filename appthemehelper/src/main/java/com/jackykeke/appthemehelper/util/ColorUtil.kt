@@ -49,6 +49,12 @@ object ColorUtil {
 
 
     @ColorInt
+    fun lightenColor(@ColorInt color: Int): Int {
+        return shiftColor(color, 1.1f)
+    }
+
+
+    @ColorInt
     fun darkenColor(@ColorInt color: Int): Int {
         return shiftColor(color, 0.9f)
     }

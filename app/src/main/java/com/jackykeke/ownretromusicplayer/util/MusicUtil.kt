@@ -93,5 +93,23 @@ object MusicUtil : KoinComponent {
         }
     }
 
+    fun getPlaylistInfoString(
+        context: Context,
+        songs: List<Song>,
+    ): String {
+        val duration = getTotalDuration(songs)
+        return buildInfoString(
+            getSongCountString(context, songs.size),
+            getReadableDurationString(duration)
+        )
+    }
+
+    fun getTotalDuration(songs: List<Song>): Long {
+        var duration: Long = 0
+        for (i in songs.indices) {
+            duration += songs[i].duration
+        }
+        return duration
+    }
 
 }

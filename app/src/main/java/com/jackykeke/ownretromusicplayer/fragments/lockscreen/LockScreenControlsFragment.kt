@@ -28,8 +28,11 @@ import com.jackykeke.appthemehelper.util.TintHelper
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.databinding.FragmentLockScreenPlaybackControlsBinding
 import com.jackykeke.ownretromusicplayer.extensions.applyColor
+import com.jackykeke.ownretromusicplayer.extensions.ripAlpha
+import com.jackykeke.ownretromusicplayer.extensions.textColorSecondary
 import com.jackykeke.ownretromusicplayer.fragments.base.AbsPlayerControlsFragment
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
+import com.jackykeke.ownretromusicplayer.helper.PlayPauseButtonOnClickHandler
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import com.jackykeke.ownretromusicplayer.util.color.MediaNotificationProcessor
 

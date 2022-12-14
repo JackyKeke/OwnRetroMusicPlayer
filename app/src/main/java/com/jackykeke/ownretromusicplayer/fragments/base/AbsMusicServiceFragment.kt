@@ -58,5 +58,41 @@ open class AbsMusicServiceFragment(@LayoutRes layout: Int)  :Fragment(layout),
         serviceActivity?.addMusicServiceEventListener(this)
     }
 
+    override fun onServiceConnected() {
+
+    }
+
+    override fun onServiceDisconnected() {
+
+    }
+
+    override fun onQueueChanged() {
+
+    }
+
+    override fun onFavoriteStateChanged() {
+
+    }
+
+    override fun onPlayingMetaChanged() {
+
+    }
+
+    override fun onPlayStateChanged() {
+
+    }
+
+    override fun onRepeatModeChanged() {
+
+    }
+
+    override fun onMediaStoreChanged() {
+
+    }
+
+    override fun onShuffleModeChanged() {
+
+    }
+
 
 }

@@ -50,7 +50,7 @@ class MainActivity : AbsCastActivity() {
         TODO("Not yet implemented")
     }
 
-    override fun onShuttleModeChanged() {
+    override fun onShuffleModeChanged() {
         TODO("Not yet implemented")
     }
 

@@ -139,7 +139,7 @@ class LibraryViewModel(private val repository: RealRepository) : ViewModel(),
         logD("onRepeatModeChanged")
     }
 
-    override fun onShuttleModeChanged() {
+    override fun onShuffleModeChanged() {
         logD("onShuffleModeChanged")
     }
 

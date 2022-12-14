@@ -294,4 +294,11 @@ object PreferenceUtil {
 
     val isPauseOnZeroVolume get() = sharedPreferences.getBoolean(PAUSE_ON_ZERO_VOLUME, false)
 
+
+    val isAdaptiveColor
+        get() = sharedPreferences.getBoolean(
+            ADAPTIVE_COLOR_APP, false
+        )
+
+
 }
