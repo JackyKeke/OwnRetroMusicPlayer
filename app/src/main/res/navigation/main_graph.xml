@@ -10,6 +10,7 @@
     <fragment
         android:id="@+id/genreDetailsFragment"
         android:name="com.jackykeke.ownretromusicplayer.fragments.genres.GenreDetailsFragment"
+        android:label="GenreDetailsFragment"
         tools:layout="@layout/fragment_playlist_detail">
 
         <argument
