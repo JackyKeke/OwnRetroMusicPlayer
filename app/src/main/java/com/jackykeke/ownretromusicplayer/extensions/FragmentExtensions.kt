@@ -68,3 +68,13 @@ fun Context.getDrawableCompat(@DrawableRes drawableRes: Int): Drawable {
 fun Fragment.getDrawableCompat(@DrawableRes drawableRes: Int): Drawable {
     return AppCompatResources.getDrawable(requireContext(), drawableRes)!!
 }
+
+inline fun <reified T:Any> Fragment.extra(key:String,default:T?=null) = lazy {
+    val value = arguments?.get(key)
+    if (value is T) value else default
+}
+
+inline  fun <reified T : Any> Fragment.extraNotNull(key: String, default: T? = null) = lazy{
+    val value = arguments?.get(key)
+    requireNotNull(if (value is T) value else default){ key }
+}

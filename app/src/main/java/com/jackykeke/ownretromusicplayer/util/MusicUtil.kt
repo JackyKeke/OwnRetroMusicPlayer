@@ -2,8 +2,10 @@ package com.jackykeke.ownretromusicplayer.util
 
 import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.model.Artist
@@ -11,6 +13,7 @@ import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.repository.Repository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
 import java.util.*
 
 /**
@@ -21,6 +24,20 @@ import java.util.*
  * @copy 版权当然属于 keyuliang
  */
 object MusicUtil : KoinComponent {
+
+    fun createShareSongFileIntent(context: Context,song: Song):Intent{
+        return Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM,try {
+                FileProvider.getUriForFile(context,context.applicationContext.packageName, File(song.data))
+            }catch (e:IllegalArgumentException){
+                getSongFileUri(song.id)
+            }
+            )
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            type="audio/*"
+        }
+    }
 
 
     private val repository = get<Repository>()
