@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">OwnRetroMusicPlayer</string>
 
 
     <string name="about_album_label">About %s</string>

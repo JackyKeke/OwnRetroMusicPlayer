@@ -7,6 +7,7 @@ import android.os.PowerManager
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
+import androidx.annotation.IntegerRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
@@ -77,4 +78,12 @@ inline fun <reified T:Any> Fragment.extra(key:String,default:T?=null) = lazy {
 inline  fun <reified T : Any> Fragment.extraNotNull(key: String, default: T? = null) = lazy{
     val value = arguments?.get(key)
     requireNotNull(if (value is T) value else default){ key }
+}
+
+fun Fragment.getIntRes(@IntegerRes int: Int): Int {
+    return resources.getInteger(int)
+}
+
+fun Context.getIntRes(@IntegerRes int: Int): Int {
+    return resources.getInteger(int)
 }

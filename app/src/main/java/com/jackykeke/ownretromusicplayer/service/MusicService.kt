@@ -10,9 +10,7 @@ import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
-import android.media.MediaMetadata
 import android.os.*
-import android.os.Build.VERSION_CODES.M
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import android.support.v4.media.MediaBrowserCompat
@@ -25,7 +23,6 @@ import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.media.MediaBrowserServiceCompat
 import androidx.preference.PreferenceManager
-import androidx.room.Transaction
 import code.name.monkey.retromusic.appwidgets.AppWidgetCircle
 import com.jackykeke.ownretromusicplayer.appwidget.AppWidgetCard
 import code.name.monkey.retromusic.appwidgets.AppWidgetClassic
@@ -79,7 +76,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import org.koin.java.KoinJavaComponent.get
 import java.lang.Runnable
 import kotlin.collections.ArrayList
-import kotlin.random.Random
 
 /**
  *
@@ -1196,9 +1192,67 @@ class MusicService : MediaBrowserServiceCompat(),
         playSongAt(getPreviousPosition(force))
     }
 
+    fun removeSong(position: Int) {
+
+    }
+
+    fun removeSong(song: Song) {
+        removeSongImpl(song)
+        notifyChange(QUEUE_CHANGED)
+    }
+
+
+    fun removeSong(songs:List<Song>){
+        for (song in songs){
+            removeSongImpl(song)
+        }
+        notifyChange(QUEUE_CHANGED)
+    }
+
+
+    private fun removeSongImpl(song: Song) {
+
+        val deletePosition = playingQueue.indexOf(song)
+        if (deletePosition != -1){
+            playingQueue.removeAt(deletePosition)
+            rePosition(deletePosition)
+        }
+
+        val originalDeletePosition = originalPlayingQueue.indexOf(song)
+        if (originalDeletePosition != -1){
+            originalPlayingQueue.removeAt(originalDeletePosition)
+            rePosition(originalDeletePosition)
+        }
+    }
+
+    private fun rePosition(deletedPosition: Int) {
+        val  currentPosition =  getPosition()
+        if (deletedPosition < currentPosition){
+            position = currentPosition - 1
+        }else if (deletedPosition == currentPosition){
+            if (playingQueue.size > deletedPosition) {
+                setPosition(position)
+            } else {
+                setPosition(position - 1)
+            }
+        }
+    }
+
+    fun addSongs(position: Int, songs: List<Song>?) {
+        playingQueue.addAll(position, songs!!)
+        originalPlayingQueue.addAll(position, songs)
+        notifyChange(QUEUE_CHANGED)
+    }
+
+    fun addSongs(songs: List<Song>?) {
+        playingQueue.addAll(songs!!)
+        originalPlayingQueue.addAll(songs)
+        notifyChange(QUEUE_CHANGED)
+    }
+
     companion object {
         val TAG: String = MusicService::class.java.simpleName
-        const val RETRO_MUSIC_PACKAGE_NAME = "code.name.monkey.retromusic"
+        const val RETRO_MUSIC_PACKAGE_NAME = "com.jackykeke.ownretromusicplayer"
         const val MUSIC_PACKAGE_NAME = "com.android.music"
         const val ACTION_TOGGLE_PAUSE = "$RETRO_MUSIC_PACKAGE_NAME.togglepause"
         const val ACTION_PLAY = "$RETRO_MUSIC_PACKAGE_NAME.play"

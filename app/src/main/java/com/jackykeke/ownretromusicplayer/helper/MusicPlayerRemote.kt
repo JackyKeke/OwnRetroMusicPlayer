@@ -1,9 +1,13 @@
 package com.jackykeke.ownretromusicplayer.helper
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.*
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.extensions.showToast
 import com.jackykeke.ownretromusicplayer.model.Song
 import com.jackykeke.ownretromusicplayer.repository.SongRepository
 import com.jackykeke.ownretromusicplayer.service.MusicService
@@ -111,8 +115,8 @@ object MusicPlayerRemote : KoinComponent {
         }
     }
 
-    private fun setShuffleMode(shuffleMode: Int) :Boolean{
-        if (musicService!=null){
+    private fun setShuffleMode(shuffleMode: Int): Boolean {
+        if (musicService != null) {
             musicService!!.setShuffleMode(shuffleMode)
             return true
         }
@@ -145,7 +149,7 @@ object MusicPlayerRemote : KoinComponent {
     /**
      * Async
      */
-    private fun openQueue(queue: List<Song>, startPosition: Int, startPlaying: Boolean) {
+    fun openQueue(queue: List<Song>, startPosition: Int, startPlaying: Boolean) {
         if (!tryToHandleOpenPlayingQueue(
                 queue, startPosition, startPlaying
             ) && musicService != null
@@ -202,9 +206,11 @@ object MusicPlayerRemote : KoinComponent {
 
         val binder = ServiceBinder(callback)
         if (contextWrapper.bindService(
-                Intent().setClass(contextWrapper,MusicService::class.java),
-            binder,
-            Context.BIND_AUTO_CREATE)){
+                Intent().setClass(contextWrapper, MusicService::class.java),
+                binder,
+                Context.BIND_AUTO_CREATE
+            )
+        ) {
             mConnectionMap[contextWrapper] = binder
             return ServiceToken(contextWrapper)
         }
@@ -233,6 +239,27 @@ object MusicPlayerRemote : KoinComponent {
      */
     fun playNextSong() {
         musicService?.playNextSong(true)
+    }
+
+    @SuppressLint("StringFormatInvalid")
+    fun playNext(songs: List<Song>): Boolean {
+        musicService?.let {
+            if (playingQueue.isNotEmpty()) {
+                it.addSongs(position + 1, songs)
+            } else {
+                openQueue(songs, 0, false)
+            }
+
+            val toast =
+                if (songs.size == 1) musicService!!.resources.getString(R.string.added_title_to_playing_queue)
+                else musicService!!.resources.getString(
+                    R.string.added_x_titles_to_playing_queue,
+                    songs.size
+                )
+            it?.showToast(toast, Toast.LENGTH_SHORT)
+            return true
+        }
+        return false
     }
 
     /**
@@ -268,5 +295,53 @@ object MusicPlayerRemote : KoinComponent {
         }
 
     }
+
+
+    @JvmStatic
+    fun removeFromQueue(songs: List<Song>): Boolean {
+        if (musicService != null) {
+            musicService!!.removeSong(songs)
+            return true
+        }
+        return false
+    }
+
+    @JvmStatic
+    fun removeFromQueue(song: Song): Boolean {
+        if (musicService != null) {
+            musicService!!.removeSong(song)
+            return true
+        }
+        return false
+    }
+
+
+    fun removeFromQueue(position: Int): Boolean {
+        if (musicService != null && position >= 0 && position < playingQueue.size) {
+            musicService!!.removeSong(position)
+            return true
+        }
+        return false
+    }
+
+    fun enqueue(songs: List<Song>): Boolean {
+        if (musicService != null) {
+            if (playingQueue.isNotEmpty()) {
+                musicService?.addSongs(songs)
+            } else {
+                openQueue(songs, 0, false)
+            }
+            val toast =
+                if (songs.size == 1) musicService!!.resources.getString(R.string.added_title_to_playing_queue)
+                else musicService!!.resources.getString(
+                    R.string.added_x_titles_to_playing_queue,
+                    songs.size
+                )
+            musicService?.showToast(toast)
+            return true
+        }
+        return false
+    }
+
 
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.RetroMusic" parent="Theme.RetroMusic.Base" />
 
@@ -97,5 +97,32 @@
 
     <style name="TextViewOverline" parent="TextAppearance.MaterialComponents.Overline" />
 
+
+    <style name="OverFlowButton">
+        <item name="srcCompat">@drawable/ic_more_vert</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:background">?attr/roundSelector</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <style name="SubTitleTextAppearance">
+        <item name="android:textAppearance">@style/TextViewOverline</item>
+        <item name="android:layout_gravity">start|center_vertical</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="popupTheme">?toolbarPopupTheme</item>
+        <item name="android:transitionName" tools:ignore="NewApi">toolbar</item>
+        <item name="layout_collapseMode">pin</item>
+        <item name="contentInsetStartWithNavigation">0dp</item>
+        <item name="contentInsetStart">0dp</item>
+        <item name="titleMarginStart">16dp</item>
+    </style>
 
 </resources>

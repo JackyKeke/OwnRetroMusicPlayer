@@ -2,12 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.jackykeke.ownretromusicplayer">
-
-    <!--    所需的权限-->
+    <!-- 所需的权限 -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
-        android:maxSdkVersion="30" />
-    <!--    Android关闭屏幕时不锁屏 权限-->
+        android:maxSdkVersion="30" /> <!-- Android关闭屏幕时不锁屏 权限 -->
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -26,7 +24,6 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-
     <uses-permission
         android:name="android.permission.BLUETOOTH_CONNECT"
         android:usesPermissionFlags="neverForLocation"
@@ -48,14 +45,14 @@
         android:usesCleartextTraffic="true"
         tools:overrideLibrary="com.jackykeke.appthemehelper"
         tools:targetApi="m">
-
-
+        <activity
+            android:name=".SAFGuideActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.RetroMusic.SplashScreen">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.MUSIC_PLAYER" />
@@ -66,9 +63,9 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.media.action.MEDIA_PALY_FROM_SEARCH" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -125,10 +122,7 @@
 
                 <data android:mimeType="vnd.android.cursor.dir/audio" />
             </intent-filter>
-
         </activity>
-
-
     </application>
 
 </manifest>

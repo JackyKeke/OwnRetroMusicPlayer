@@ -78,7 +78,7 @@ android {
     }
 
     lint{
-        abortOnError  false
+        abortOnError  true
         warning 'ImpliedQuantity', 'Instantiatable', 'MissingQuantity', 'MissingTranslation'
 
     }

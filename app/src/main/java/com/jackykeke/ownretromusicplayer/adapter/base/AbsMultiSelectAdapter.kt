@@ -1,4 +1,4 @@
-package code.name.monkey.retromusic.adapter.base
+package com.jackykeke.ownretromusicplayer.adapter.base
 
 import android.graphics.Color
 import android.view.ActionMode

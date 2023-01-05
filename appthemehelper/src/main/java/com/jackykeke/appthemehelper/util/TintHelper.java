@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -311,6 +312,14 @@ public final class TintHelper {
 
     private static void setTint(FloatingActionButton view, int color, boolean isDark) {
         view.setImageTintList(ColorStateList.valueOf(color));
+    }
+
+    @CheckResult
+    @NonNull
+    public static Drawable createTintedDrawable(Context context,
+                                                @DrawableRes int res, @ColorInt int color){
+        Drawable drawable = ContextCompat.getDrawable(context,res);
+        return createTintedDrawable(drawable, color);
     }
 
 

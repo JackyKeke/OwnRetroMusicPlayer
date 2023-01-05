@@ -1,12 +1,18 @@
 package com.jackykeke.ownretromusicplayer.fragments
 
+import android.content.Context
 import android.os.Build.VERSION_CODES.M
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.db.HistoryEntity
+import com.jackykeke.ownretromusicplayer.db.PlaylistEntity
 import com.jackykeke.ownretromusicplayer.db.PlaylistWithSongs
+import com.jackykeke.ownretromusicplayer.db.SongEntity
+import com.jackykeke.ownretromusicplayer.extensions.showToast
+import com.jackykeke.ownretromusicplayer.extensions.toSongEntity
 import com.jackykeke.ownretromusicplayer.fragments.search.Filter
 import com.jackykeke.ownretromusicplayer.helper.MusicPlayerRemote
 import com.jackykeke.ownretromusicplayer.interfaces.IMusicServiceEventListener
@@ -16,6 +22,8 @@ import com.jackykeke.ownretromusicplayer.repository.RealRepository
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import com.jackykeke.ownretromusicplayer.util.logD
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -157,6 +165,72 @@ class LibraryViewModel(private val repository: RealRepository) : ViewModel(),
         withContext(Dispatchers.Main){
             MusicPlayerRemote.openAndShuffleQueue(songs,true)
         }
+    }
+
+    fun addToPlayList(context: Context, playlistName: String, songs: List<Song>) {
+        viewModelScope.launch(IO) {
+            val playlists = checkPlaylistExists(playlistName)
+            if (playlists.isEmpty()){
+                val  playlistId:Long =
+                    createPlaylist(PlaylistEntity(playlistName = playlistName))
+                insertSongs(songs.map { it.toSongEntity(playlistId) })
+                withContext(Main){
+                    context.showToast(context.getString(
+                        R.string.playlist_created_sucessfully,
+                        playlistName))
+                }
+            }else{
+                val playlist = playlists.firstOrNull()
+                if (playlist!=null){
+                    insertSongs(songs.map {
+                        it.toSongEntity(playListId =playlist.playListId)
+                    })
+                }
+            }
+            forceReload(ReloadType.Playlists)
+            withContext(Main){
+                context.showToast(
+                    context.getString(
+                        R.string.added_song_count_to_playlist,
+                        songs.size,
+                        playlistName)
+                )
+            }
+        }
+
+    }
+
+    suspend fun insertSongs(songs: List<SongEntity>) {
+        return repository.insertSongs(songs)
+    }
+
+
+    private suspend fun createPlaylist(playlistEntity: PlaylistEntity): Long {
+        return repository.createPlaylist(playlistEntity)
+    }
+
+
+    private suspend fun checkPlaylistExists(playlistName: String): List<PlaylistEntity> =
+        repository.checkPlaylistExists(playlistName)
+
+    fun deleteSongsInPlaylist(songs: List<SongEntity>){
+        viewModelScope.launch(IO) {
+            repository.deleteSongsInPlaylist(songs)
+            forceReload(ReloadType.Playlists)
+        }
+    }
+
+    fun deleteSongsFromPlaylist(playlists:List<PlaylistEntity>) = viewModelScope.launch(IO) {
+        repository.deletePlaylistSongs(playlists)
+    }
+
+    fun deleteRoomPlaylist (playlists: List<PlaylistEntity>) = viewModelScope.launch(IO) {
+        repository.deleteRoomPlaylist(playlists)
+    }
+
+
+    fun  renameRoomPlaylist (playlistId:Long,name:String)=viewModelScope.launch(IO){
+        repository.renameRoomPlaylist(playlistId, name)
     }
 
 }

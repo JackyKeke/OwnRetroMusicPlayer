@@ -1,7 +1,11 @@
 package com.jackykeke.ownretromusicplayer.util
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.core.content.edit
+import androidx.core.content.getSystemService
 import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
@@ -9,6 +13,7 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.jackykeke.appthemehelper.util.VersionUtils
 import com.jackykeke.ownretromusicplayer.*
+import com.jackykeke.ownretromusicplayer.extensions.getIntRes
 import com.jackykeke.ownretromusicplayer.extensions.getStringOrDefault
 import com.jackykeke.ownretromusicplayer.helper.SortOrder
 import com.jackykeke.ownretromusicplayer.model.CategoryInfo
@@ -300,5 +305,55 @@ object PreferenceUtil {
             ADAPTIVE_COLOR_APP, false
         )
 
+    var safSdCardUri
+        get() = sharedPreferences.getStringOrDefault(SAF_SDCARD_URI, "")
+        set(value) = sharedPreferences.edit {
+            putString(SAF_SDCARD_URI, value)
+        }
+
+
+    var songGridSize
+        get() = sharedPreferences.getInt(
+            SONG_GRID_SIZE,
+            App.getContext().getIntRes(R.integer.default_list_columns)
+        )
+        set(value) = sharedPreferences.edit {
+            putInt(SONG_GRID_SIZE, value)
+        }
+
+    var songGridSizeLand
+        get() = sharedPreferences.getInt(
+            SONG_GRID_SIZE_LAND,
+            App.getContext().getIntRes(R.integer.default_grid_columns_land)
+        )
+        set(value) = sharedPreferences.edit {
+            putInt(SONG_GRID_SIZE_LAND, value)
+        }
+
+    private val autoDownloadImagesPolicy
+        get() = sharedPreferences.getStringOrDefault(
+            AUTO_DOWNLOAD_IMAGES_POLICY,
+            "only_wifi"
+        )
+
+    @Suppress("deprecation")
+    fun isAllowedToDownloadMetadata(context: Context):Boolean{
+        return when (autoDownloadImagesPolicy){
+            "always" -> true
+            "only_wifi" -> {
+                val connectivityManager = context.getSystemService<ConnectivityManager>()
+                if (VersionUtils.hasMarshmallow()){
+                    val network = connectivityManager?.activeNetwork
+                    val capabilities = connectivityManager?.getNetworkCapabilities(network)
+                    capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                }else{
+                    val netInfo = connectivityManager?.activeNetworkInfo
+                    netInfo != null && netInfo.type == ConnectivityManager.TYPE_WIFI && netInfo.isConnectedOrConnecting
+                }
+            }
+            "never" -> false
+            else -> false
+        }
+    }
 
 }

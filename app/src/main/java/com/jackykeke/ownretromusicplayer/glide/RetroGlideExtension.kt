@@ -14,9 +14,12 @@ import com.bumptech.glide.request.BaseRequestOptions
 import com.bumptech.glide.signature.MediaStoreSignature
 import com.jackykeke.ownretromusicplayer.App.Companion.getContext
 import com.jackykeke.ownretromusicplayer.R
+import com.jackykeke.ownretromusicplayer.glide.artistimage.ArtistImage
 import com.jackykeke.ownretromusicplayer.glide.audiocover.AudioFileCover
 import com.jackykeke.ownretromusicplayer.glide.palette.BitmapPaletteWrapper
+import com.jackykeke.ownretromusicplayer.model.Artist
 import com.jackykeke.ownretromusicplayer.model.Song
+import com.jackykeke.ownretromusicplayer.util.CustomArtistImageUtil.Companion.getInstance
 import com.jackykeke.ownretromusicplayer.util.MusicUtil.getMediaStoreAlbumCoverUri
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 
@@ -80,6 +83,26 @@ object RetroGlideExtension {
 
     fun getDrawable(@DrawableRes id: Int): Drawable? {
         return ContextCompat.getDrawable(getContext(), id)
+    }
+
+    fun getArtistModel(artist: Artist, forceDownload: Boolean): Any {
+        return getArtistModel(
+            artist,
+            getInstance(getContext()).hasCustomArtistImage(artist),
+            forceDownload
+        )
+    }
+
+    private fun getArtistModel(
+        artist: Artist,
+        hasCustomImage: Boolean,
+        forceDownload: Boolean
+    ):Any{
+        return if (!hasCustomImage){
+            ArtistImage(artist)
+        }else{
+            getFile(artist)
+        }
     }
 
 }

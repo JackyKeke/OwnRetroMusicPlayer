@@ -6,7 +6,6 @@
     app:startDestination="@id/action_home">
 
 
-
     <fragment
         android:id="@+id/genreDetailsFragment"
         android:name="com.jackykeke.ownretromusicplayer.fragments.genres.GenreDetailsFragment"
@@ -15,7 +14,7 @@
 
         <argument
             android:name="extra_genre"
-            app:argType="com.jackykeke.ownretromusicplayer.model.Genre"/>
+            app:argType="com.jackykeke.ownretromusicplayer.model.Genre" />
     </fragment>
 
 
