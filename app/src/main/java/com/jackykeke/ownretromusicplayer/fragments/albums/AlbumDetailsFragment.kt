@@ -6,21 +6,27 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
 import com.jackykeke.ownretromusicplayer.R
 import com.jackykeke.ownretromusicplayer.adapter.song.SimpleSongAdapter
 import com.jackykeke.ownretromusicplayer.databinding.FragmentAlbumDetailsBinding
+import com.jackykeke.ownretromusicplayer.extensions.applyColor
+import com.jackykeke.ownretromusicplayer.extensions.applyOutlineColor
 import com.jackykeke.ownretromusicplayer.extensions.show
 import com.jackykeke.ownretromusicplayer.extensions.surfaceColor
 import com.jackykeke.ownretromusicplayer.fragments.base.AbsMainActivityFragment
 import com.jackykeke.ownretromusicplayer.glide.GlideApp
 import com.jackykeke.ownretromusicplayer.glide.RetroGlideExtension
+import com.jackykeke.ownretromusicplayer.glide.SingleColorTarget
 import com.jackykeke.ownretromusicplayer.interfaces.IAlbumClickListener
 import com.jackykeke.ownretromusicplayer.model.Album
+import com.jackykeke.ownretromusicplayer.model.Artist
 import com.jackykeke.ownretromusicplayer.util.MusicUtil
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
 import com.jackykeke.ownretromusicplayer.util.logD
@@ -170,6 +176,14 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
             })
     }
 
+    private fun setColors(color: Int) {
+        _binding?.fragmentAlbumContent?.apply {
+            shuffleAction.applyColor(color)
+            playAction.applyOutlineColor(color)
+        }
+    }
+
+
 
     private fun loadArtistImage(artist: Artist) {
         detailsViewModel.getMoreAlbums(artist).observe(viewLifecycleOwner) {
@@ -187,6 +201,23 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
             .dontAnimate()
             .dontTransform()
             .into(binding.artistImage)
+    }
+
+    private fun moreAlbums(albums: List<Album>) {
+        binding.fragmentAlbumContent.moreTitle.show()
+        binding.fragmentAlbumContent.moreRecyclerView.show()
+        binding.fragmentAlbumContent.moreTitle.text =
+            String.format(getString(R.string.label_more_from), album.artistName)
+
+        val albumAdapter =
+            HorizontalAlbumAdapter(requireActivity() as AppCompatActivity, albums, this)
+        binding.fragmentAlbumContent.moreRecyclerView.layoutManager = GridLayoutManager(
+            requireContext(),
+            1,
+            GridLayoutManager.HORIZONTAL,
+            false
+        )
+        binding.fragmentAlbumContent.moreRecyclerView.adapter = albumAdapter
     }
 
 

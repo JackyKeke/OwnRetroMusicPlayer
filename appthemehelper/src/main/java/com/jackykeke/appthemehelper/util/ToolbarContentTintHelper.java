@@ -447,4 +447,17 @@ public final class ToolbarContentTintHelper {
 
     }
 
+
+    public static void colorBackButton(@NonNull Toolbar toolbar) {
+        int color = ATHUtil.INSTANCE.resolveColor(toolbar.getContext(), androidx.appcompat.R.attr.colorControlNormal);
+        final PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY);
+        for (int i = 0; i < toolbar.getChildCount(); i++) {
+            final View backButton = toolbar.getChildAt(i);
+            if (backButton instanceof ImageView) {
+                ((ImageView) backButton).getDrawable().setColorFilter(colorFilter);
+            }
+        }
+    }
+
+
 }

@@ -19,6 +19,7 @@ import com.jackykeke.ownretromusicplayer.glide.audiocover.AudioFileCover
 import com.jackykeke.ownretromusicplayer.glide.palette.BitmapPaletteWrapper
 import com.jackykeke.ownretromusicplayer.model.Artist
 import com.jackykeke.ownretromusicplayer.model.Song
+import com.jackykeke.ownretromusicplayer.util.CustomArtistImageUtil.Companion.getFile
 import com.jackykeke.ownretromusicplayer.util.CustomArtistImageUtil.Companion.getInstance
 import com.jackykeke.ownretromusicplayer.util.MusicUtil.getMediaStoreAlbumCoverUri
 import com.jackykeke.ownretromusicplayer.util.PreferenceUtil
@@ -103,6 +104,17 @@ object RetroGlideExtension {
         }else{
             getFile(artist)
         }
+    }
+
+    @JvmStatic
+    @GlideOption
+    fun albumCoverOptions(
+        baseRequestOptions: BaseRequestOptions<*>,
+        song: Song
+    ):BaseRequestOptions<*>{
+        return baseRequestOptions.diskCacheStrategy(DEFAULT_DISK_CACHE_STRATEGY)
+            .error(ContextCompat.getDrawable(getContext(), DEFAULT_ALBUM_IMAGE))
+            .placeholder(ContextCompat.getDrawable(getContext(), DEFAULT_ALBUM_IMAGE))
     }
 
 }
