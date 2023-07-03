@@ -2,7 +2,6 @@
 <resources>
 
     <style name="Theme.RetroMusic.Base.Adaptive" parent="Theme.Material3.DayNight.NoActionBar">
-
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="roundSelector">@drawable/round_selector</item>
         <item name="rectSelector">@drawable/rect_selector</item>
@@ -15,15 +14,7 @@
         <item name="elevationOverlayColor">@color/elevationOverlay</item>
         <item name="popupMenuBackground">@drawable/popup_background</item>
         <item name="android:windowActionModeOverlay">false</item>
-
     </style>
-
-
-    <!-- content description is necessary to find the overflow button later in the layout-->
-    <style name="Widget.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
-        <item name="android:contentDescription">@string/abc_action_menu_overflow_description</item>
-    </style>
-
 
     <style name="Theme.RetroMusic.Base" parent="Theme.Material3.Dark.NoActionBar">
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
@@ -72,4 +63,21 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="MusicProgressSliderParent">
+        <item name="android:progressDrawable">@android:color/transparent</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:thumb">@drawable/slider_thumb</item>
+    </style>
+
+    <!-- content description is necessary to find the overflow button later in the layout-->
+    <style name="Widget.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:contentDescription">@string/abc_action_menu_overflow_description</item>
+    </style>
+
+    <style name="FabParent">
+        <item name="borderWidth">0dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

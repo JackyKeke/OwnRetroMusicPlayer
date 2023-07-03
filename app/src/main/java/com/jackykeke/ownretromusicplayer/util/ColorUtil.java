@@ -3,6 +3,7 @@ package com.jackykeke.ownretromusicplayer.util;
 import android.graphics.Bitmap;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.FloatRange;
 import androidx.annotation.Nullable;
 import androidx.palette.graphics.Palette;
 
@@ -54,4 +55,7 @@ public class ColorUtil {
       return lhs.getPopulation() - rhs.getPopulation();
     }
   }
+
+
+
 }
